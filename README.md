@@ -41,10 +41,9 @@ This tab displays multiple plots for gene expression and metadata visualization 
 
 The first panel controls the zoom capabilities. Double click zooms in, double click resets zoom.
 
-•	Colocalization. Filling the two boxes with Gene 1 and Gene 2 the user obtains two panels. 
-
-•	The top one shows the expression level of each gene in red in green and the colocalizations in shades of yellow. The degree of color blend can be customized using the blend bar on top of the panel from less stringent 0, to more stringent 1.
-•	Bottom panel shows cell types and control zoom. Again, double click zooms in, double click resets zoom.
+•	Colocalization. Filling the two boxes with Gene 1 and Gene 2 the user obtains two panels: 
+		The top one shows the expression level of each gene in red in green and the colocalizations in shades of yellow. The degree of color blend can be customized using the blend bar on top of the panel from less stringent 0, to more stringent 1.
+		Bottom panel shows cell types and control zoom. Again, double click zooms in, double click resets zoom.
 
 
 6.- Heatmaps of gene expression.
