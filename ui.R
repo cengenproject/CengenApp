@@ -40,13 +40,21 @@ utr <-
     "WBGene00006783",
     "WBGene00000501",
     "WBGene00006788",
-    "WBGene00001555"
+    "WBGene00001555",
+    "WBGene00206533",
+    "WBGene00011964",
+    "WBGene00018172",
+    "WBGene00016259",
+    "WBGene00023407"
   )
 
-
+msg <- filter(gene_list, gene_id %in% utr)$gene_name %>% paste(., collapse = ", ")
 
 ## UI ----
 ui <- fluidPage(
+  #tags$head(includeHTML(("tracking.html"))),
+  tags$head(includeHTML(("google-analytics-script2.html"))),
+  #tags$head(includeScript("tracking.js")),
   theme = "Theme.min.css",
   #shinytheme("flatly"),
   #background-color: #2f2d2d;
@@ -84,10 +92,10 @@ ui <- fluidPage(
       fluidPage(
         hr(),
         h6(
-          "Find which genes are expressed in each cell type ordered by expression level or which cell type express a particular gene."
+          "Find all genes expressed in a given cell type, or all cell types expressing a given gene (or group of genes)."
         ),
-        h6("Select the threshold of expression or unfiltered data"),
-        h6("4 More stringent, 1 less stringent"),
+        h6("Select one of four thresholds for expression:"),
+        h6("1 (least stringent) to 4 (most stringent) or select unfiltered data"),
         hr(),
         fluidRow(
           column(1),
@@ -146,6 +154,7 @@ ui <- fluidPage(
           )
         ),
         br(),
+        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
         fluidRow(
           column(1),
           column(
@@ -176,8 +185,10 @@ ui <- fluidPage(
       fluidPage(
         hr(),
         h6(
-          "Find which genes are expressed in a group of cell types and not in other cell types."
+          "Find genes expressed in one group of cell types and not in another group based on the percentages of cells expressing the gene."
         ),
+        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        br(),
         fluidRow(
           #column(1),
           column(
@@ -230,12 +241,14 @@ ui <- fluidPage(
     ),
       ### Enriched types Panel ----
       tabPanel(
-        "Enriched Genes by Cell Type",
+        "Enriched Genes by cell type",
         fluidPage(
           hr(),
           h6(
-            "Find genes overexpressed in one cell type compared to the rest of cells in the dataset (neurons only or all cell types)."
+            "Find genes differentially expressed in one cell type compared to all other cells in the dataset (neurons only or all cell types). 
+            This is NOT a comprehensive list of genes detected in each cell type."
           ),
+          h6("Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."),
           textOutput("TopMarkers cell plot"),
           selectInput(
             inputId = "dataset2",
@@ -248,13 +261,14 @@ ui <- fluidPage(
               inputId = "Markers",
               label = "Select cluster",
               choices = sort(unique(allNeurons$`Neuron.type`)),
-              selected = "ADA"
+              selected = "SIA"
             ),
             textInput(
               inputId = "top",
               label = "Show top X genes",
-              value = "30"
+              value = "100"
             ),
+            h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
             DT::dataTableOutput("MarkTable"),
             downloadButton('downloadMarkers', "Download table"),
             h6("HEADER LEGEND:"),
@@ -274,13 +288,14 @@ ui <- fluidPage(
               inputId = "Markers2",
               label = "Select cluster",
               choices = sort(unique(allCells$`Neuron.type`)),
-              selected = "Sperm"
+              selected = "SIA"
             ),
             textInput(
               inputId = "top2",
               label = "Show top X genes",
-              value = "30"
+              value = "100"
             ),
+            h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
             DT::dataTableOutput("MarkTable2"),
             downloadButton('downloadMarkers2', "Download table"),
             h6("HEADER LEGEND:"),
@@ -301,22 +316,26 @@ ui <- fluidPage(
         "Find Differential Expression between Cell Types",
         fluidPage(
           hr(),
+          h6("Find differentially expressed genes between two cell types or two groups of cell types."),
           h6("The calculation can take a few minutes."),
+          h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
           hr(),
           fluidRow(
             column(
-              3,
+              4,
               selectInput(
-                inputId = "ClusterCells1",
-                label = "Select cluster 1",
+                inputId = "batch1",
+                label = "Select Group 1",
                 choices = sort(unique(allCells$`Neuron.type`)),
-                selected = "Sperm"
+                selected = "AVL",
+                multiple = TRUE
               ),
               selectInput(
-                inputId = "ClusterCells2",
-                label = "Select cluster 2",
-                choices = sort(unique(allCells$`Neuron.type`)),
-                selected = "Intestine"
+                inputId = "batch2",
+                label = "Select Group 2: Introduce cell types, NEURONS or ALL",
+                choices = c("ALL","NEURONS",sort(unique(allCells$`Neuron.type`))),
+                selected = c("RME_DV","RME_LR"),
+                multiple = TRUE
               ),
               actionButton("DEXButton", "Calculate DEX", icon = icon("hand-o-right"))
               
@@ -331,27 +350,9 @@ ui <- fluidPage(
               textInput(
                 inputId = "topM2",
                 label = "Show top X genes",
-                value = "30"
+                value = "100"
               )
               
-            ),
-            column(
-              3,
-              textInput(
-                inputId = "batch1",
-                label = "Group 1: Introduce cell types separated with ,",
-                value = "AVM,AWA,AWB"
-              ),
-              textInput(
-                inputId = "batch2",
-                label = "Group 2: Introduce cell types, NEURONS or ALL",
-                value = "AWC_ON,AWC_OFF"
-              ),
-              actionButton(
-                "DEXButtonBatch",
-                "Calculate DEX in groups",
-                icon = icon("hand-o-right")
-              )
             )
           ),
           br(),
@@ -378,6 +379,7 @@ ui <- fluidPage(
       ### Single cell panel ----
       tabPanel("Single cell plot", fluidPage(
         hr(),
+        h6("Plot cells colored by cell type, experiment, or gene expression."),
         column(
           3,
           h4('Integrated single-cell (10X) analysis'),
@@ -564,8 +566,9 @@ ui <- fluidPage(
         fluidPage(
           hr(),
           h6(
-            "Introduce a list of genes to display a heatmap showing expression levels and proportion of cells expressing the genes."
+            "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
           ),
+          h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
           textAreaInput(
             inputId = "genelist",
             label = "Introduce a list of genes",
@@ -599,10 +602,12 @@ ui <- fluidPage(
             "You can identify circles by clicking on them."
           ),
          
-          
-          uiOutput("dynamic"),
-          hr(),
-          plotOutput("heatmap", width = "100%", hover = "plot_hover"),
+          div(style="height:30px;width:800px;padding-left:10px;padding-right:10px;background-color:#ffffff;",fluidRow(verbatimTextOutput("vals", placeholder = TRUE))),
+          #uiOutput("dynamic"),
+          br(),
+          br(),
+          br(),
+          plotOutput("heatmap", width = "100%",hover = "plot_hover"),
           
           hr(),
           downloadLink("downloadheatmap", "Download plot")
