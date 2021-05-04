@@ -19,9 +19,8 @@ library(plotly)
 #library(cairo)
 #library(MAST)
 options(repos = BiocManager::repositories())
-#setwd("/Users/gabrielsantpere/Documents/Scripts/RshinyDeveloping_April2020")
+#setwd("/Users/gabrielsantpere/Dropbox/Scripts/RshinyDeveloping_April2020")
 #source("Functions.R")
-
 
 utr <-
   c(
@@ -37,7 +36,12 @@ utr <-
     "WBGene00006783",
     "WBGene00000501",
     "WBGene00006788",
-    "WBGene00001555"
+    "WBGene00001555",
+    "WBGene00206533",
+    "WBGene00011964",
+    "WBGene00018172",
+    "WBGene00016259",
+    "WBGene00023407"
   )
 
 server <- function(input, output) {
@@ -689,8 +693,8 @@ server <- function(input, output) {
     formatC(markers$p_val, format = "e", digits = 3) %>% gsub(" ", "", .)
   markers$p_val_adj <-
     formatC(markers$p_val_adj, format = "e", digits = 3) %>% gsub(" ", "", .)
-  markers$avg_logFC <-
-    formatC(markers$avg_logFC, digits = 3) %>% gsub(" ", "", .)
+  markers$avg_log2FC <-
+    formatC(markers$avg_log2FC, digits = 3) %>% gsub(" ", "", .)
   markersAllcells$p_val <-
     formatC(markersAllcells$p_val,
             format = "e",
@@ -699,21 +703,21 @@ server <- function(input, output) {
     formatC(markersAllcells$p_val_adj,
             format = "e",
             digits = 3) %>% gsub(" ", "", .)
-  markersAllcells$avg_logFC <-
-    formatC(markersAllcells$avg_logFC, digits = 3) %>% gsub(" ", "", .)
+  markersAllcells$avg_log2FC <-
+    formatC(markersAllcells$avg_log2FC, digits = 3) %>% gsub(" ", "", .)
   
   observeEvent(input$Markers, {
     print(input$top2)
     output$MarkTable <- DT::renderDataTable({
       DT::datatable(
-        filter(markers, cluster == input$Markers) %>% arrange(p_val_adj, desc(avg_logFC)) %>% head(as.numeric(input$top)) ,
+        filter(markers, cluster == input$Markers, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC)) %>% head(as.numeric(input$top)) ,
         style = 'jQueryUI',
         class = 'cell-border stripe',
         rownames = FALSE
       ) %>% formatStyle(c(1:8), color = "black")
     })
     t1 <-
-      filter(markers, cluster == input$Markers) %>% arrange(p_val_adj, desc(avg_logFC))
+      filter(markers, cluster == input$Markers, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC))
     output$downloadMarkers <-
       downloadHandler(
         filename = function() {
@@ -727,14 +731,14 @@ server <- function(input, output) {
   observeEvent(input$Markers2, {
     output$MarkTable2 <- DT::renderDataTable({
       DT::datatable(
-        filter(markersAllcells, cluster == input$Markers2) %>% arrange(p_val_adj, desc(avg_logFC)) %>% head(as.numeric(input$top2)),
+        filter(markersAllcells, cluster == input$Markers2, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC)) %>% head(as.numeric(input$top2)),
         style = 'jQueryUI',
         class = 'cell-border stripe',
         rownames = FALSE
       ) %>% formatStyle(c(1:8), color = "black")
     })
     t2 <-
-      filter(markersAllcells, cluster == input$Markers2) %>% arrange(p_val_adj, desc(avg_logFC))
+      filter(markersAllcells, cluster == input$Markers2, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC))
     output$downloadMarkers2 <-
       downloadHandler(
         filename = function() {
@@ -748,82 +752,82 @@ server <- function(input, output) {
   
   
   ### Tables of DEX ----
-  observeEvent(input$DEXButton, {
-    print(input$ClusterCells1)
-    withProgress(
-      message = paste0(
-        'Calculating DEX between ',
-        input$ClusterCells1,
-        ' and ',
-        input$ClusterCells2,
-        " using ",
-        input$test
-      ),
-      value = 0,
-      {
-        Idents(object = allCells) <- "Neuron.type"
-        tableDEX <-
-          FindMarkers(
-            allCells,
-            ident.1 = input$ClusterCells1,
-            ident.2 = input$ClusterCells2,
-            test.use = input$test
-          )
-        tableDEX$gene <- rownames(tableDEX)
-        tableDEX <-
-          merge(
-            tableDEX,
-            gene_list,
-            by.x = "gene",
-            by.y = "gene_id",
-            all.x = TRUE
-          )
-        tableDEX <- tableDEX %>% arrange(p_val_adj)
-        if (input$test != "roc") {
-          tableDEX$p_val <-
-            as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
-          tableDEX$p_val_adj <-
-            as.numeric(formatC(
-              tableDEX$p_val_adj,
-              format = "e",
-              digits = 3
-            ) %>% gsub(" ", "", .))
-          tableDEX$avg_logFC <-
-            as.numeric(formatC(tableDEX$avg_logFC, digits = 3) %>% gsub(" ", "", .))
-        }
-      }
-    )
-    if (nrow(tableDEX) > 0) {
-      output$MarkTable_ClusterCells <- DT::renderDataTable({
-        DT::datatable(
-          tableDEX %>% head(input$topM2),
-          options = list(pageLength = input$topM2),
-          style = 'jQueryUI',
-          class = 'cell-border stripe',
-          rownames = FALSE
-        ) %>% formatStyle(c(1:8), color = "black")
-      })
-      output$downloadDEX <-
-        downloadHandler(
-          filename = function() {
-            paste("DEXGens-",
-                  input$ClusterCells1,
-                  "",
-                  input$ClusterCells2,
-                  ".csv",
-                  sep = "")
-          },
-          content = function(file) {
-            write.csv(tableDEX, file, sep = "\t")
-          }
-        )
-    } else {
-      output$MarkTable_ClusterCells <-
-        "No features pass logfc.threshold threshold"
-    }
-  }, ignoreNULL = TRUE)
+  # observeEvent(input$DEXButton, {
+  #   print(input$ClusterCells1)
+  #   withProgress(
+  #     message = paste0(
+  #       'Calculating DEX between ',
+  #       input$ClusterCells1,
+  #       ' and ',
+  #       input$ClusterCells2,
+  #       " using ",
+  #       input$test
+  #     ),
+  #     value = 0,
+  #     {
+  #       Idents(object = allCells) <- "Neuron.type"
+  #       tableDEX <-
+  #         FindMarkers(
+  #           allCells,
+  #           ident.1 = input$ClusterCells1,
+  #           ident.2 = input$ClusterCells2,
+  #           test.use = input$test
+  #         )
+  #       tableDEX$gene <- rownames(tableDEX)
+  #       tableDEX <-
+  #         merge(
+  #           tableDEX,
+  #           gene_list,
+  #           by.x = "gene",
+  #           by.y = "gene_id",
+  #           all.x = TRUE
+  #         )
+  #       tableDEX <- tableDEX %>% arrange(p_val_adj)
+  #       if (input$test != "roc") {
+  #         tableDEX$p_val <-
+  #           as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
+  #         tableDEX$p_val_adj <-
+  #           as.numeric(formatC(
+  #             tableDEX$p_val_adj,
+  #             format = "e",
+  #             digits = 3
+  #           ) %>% gsub(" ", "", .))
+  #         tableDEX$avg_logFC <-
+  #           as.numeric(formatC(tableDEX$avg_logFC, digits = 3) %>% gsub(" ", "", .))
+  #       }
+  #     }
+  #   )
+  #   if (nrow(tableDEX) > 0) {
+  #     output$MarkTable_ClusterCells <- DT::renderDataTable({
+  #       DT::datatable(
+  #         tableDEX %>% head(input$topM2),
+  #         options = list(pageLength = input$topM2),
+  #         style = 'jQueryUI',
+  #         class = 'cell-border stripe',
+  #         rownames = FALSE
+  #       ) %>% formatStyle(c(1:8), color = "black")
+  #     })
+  #     output$downloadDEX <-
+  #       downloadHandler(
+  #         filename = function() {
+  #           paste("DEXGens-",
+  #                 input$ClusterCells1,
+  #                 "",
+  #                 input$ClusterCells2,
+  #                 ".csv",
+  #                 sep = "")
+  #         },
+  #         content = function(file) {
+  #           write.csv(tableDEX, file, sep = "\t")
+  #         }
+  #       )
+  #   } else {
+  #     output$MarkTable_ClusterCells <-
+  #       "No features pass logfc.threshold threshold"
+  #   }
+  # }, ignoreNULL = TRUE)
   
-  observeEvent(input$DEXButtonBatch, {
+  observeEvent(input$DEXButton, {
     print(input$batch1)
     print(input$batch2)
     Idents(object = allCells) <- "Neuron.type"
@@ -888,8 +892,9 @@ server <- function(input, output) {
           by.y = "gene_id",
           all.x = TRUE
         )
-      tableDEX <- tableDEX %>% arrange(p_val_adj)
+      
       if (input$test != "roc") {
+        tableDEX <- tableDEX %>% arrange(p_val_adj)
         tableDEX$p_val <-
           as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
         tableDEX$p_val_adj <-
@@ -898,9 +903,15 @@ server <- function(input, output) {
             format = "e",
             digits = 3
           ) %>% gsub(" ", "", .))
-        tableDEX$avg_logFC <-
-          as.numeric(formatC(tableDEX$avg_logFC, digits = 3) %>% gsub(" ", "", .))
       }
+      if (input$test == "roc") {
+        tableDEX <- tableDEX %>% arrange(desc(avg_log2FC))
+      }    
+        tableDEX$avg_log2FC <-
+          as.numeric(formatC(tableDEX$avg_log2FC, digits = 3) %>% gsub(" ", "", .))
+  
+        
+        
       if (nrow(tableDEX) > 0) {
         output$MarkTable_Batch <- DT::renderDataTable({
           DT::datatable(
@@ -909,7 +920,7 @@ server <- function(input, output) {
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
-          ) %>% formatStyle(c(1:8), color = "black")
+          ) %>% formatStyle(c(1:9), color = "black")
         })
         output$downloadDEX <-
           downloadHandler(
@@ -1216,7 +1227,7 @@ observeEvent(input$PlotHeatmap, {
   
   #ss <- unlist(strsplit(as.character(input$genelist), split = ","))
   #ss <- gsub(" ", "", as.character(ss))
-  ss <- strsplit(as.character(input$genelist), "\n| |\\,")
+  ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")
   ss <- as.data.frame(ss)[,1]
   
   ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
@@ -1307,7 +1318,7 @@ observeEvent(input$PlotHeatmap, {
     inFile <- input$file1
     ss<-read.table(inFile$datapath, header=FALSE)$V1
     
-    ss <- strsplit(as.character(ss), "\n| |\\,")
+    ss <- strsplit(as.character(ss), "\n| |\\,|\t")
     
     ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
     
@@ -1376,13 +1387,13 @@ observeEvent(input$PlotHeatmap, {
           labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
       )
     
-    output$dynamic <- renderUI({
-      #req(input$plot_hover)
-      verbatimTextOutput("vals", placeholder = TRUE)
-    })
-    
+     #output$dynamic <- renderUI({
+    #   req(input$plot_hover)
+     #  verbatimTextOutput("vals", placeholder = TRUE)
+     #})
+     
     output$vals <- renderPrint({
-      hover <- input$plot_hover 
+      #hover <- input$plot_hover 
       #print(input$plot_hover) # list
       y <- nearPoints(flp.neuron.scaled, input$plot_hover)
       req(nrow(y) != 0)
