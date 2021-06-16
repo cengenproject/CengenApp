@@ -67,6 +67,7 @@ ui <- fluidPage(
   titlePanel(
     "Discovery and analysis of the C. elegans Neuronal Gene Expression Network -- CeNGEN"
   ),
+  tags$a(href="http://www.cengen.org/single-cell-rna-seq/", "CeNGENApp Help and Documentation"),
   hr(),
   add_busy_spinner(
     spin = "double-bounce",
@@ -78,6 +79,8 @@ ui <- fluidPage(
     height = "50px",
     width = "50px"
   ),
+  
+  #br(),
   #add_busy_bar(color = "darkorange"),
   # Side panel entering what to plot ----
   
@@ -576,10 +579,20 @@ ui <- fluidPage(
             width = "500px",
             height = "100px"
           ),
-          actionButton(
-            "PlotHeatmap",
-            "Plot heatmap from list",
-            icon = icon("hand-o-right")
+        
+         
+            selectInput(
+              inputId = "dataset_heatmap",
+              label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
+              choices = c("Neurons only", "All cell types")
+            ),    
+         
+            
+              actionButton(
+              "PlotHeatmap","Plot heatmap from list",
+              icon = icon("hand-o-right")
+             
+          
           ),
           hr(),
           fluidRow(
