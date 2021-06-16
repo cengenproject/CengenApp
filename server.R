@@ -1224,19 +1224,33 @@ server <- function(input, output) {
 
 
 observeEvent(input$PlotHeatmap, {
-  
+  ds <- input$dataset_heatmap
   #ss <- unlist(strsplit(as.character(input$genelist), split = ","))
   #ss <- gsub(" ", "", as.character(ss))
   ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")
   ss <- as.data.frame(ss)[,1]
-  
   ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
  
-  missing <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+  mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+  mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
   
-  flp.neuron.scaled <- med.scaled.long[which(med.scaled.long$gene_name %in% ss),]
+  if(ds=="Neurons only"){
+    L4.TPM=L4.TPM.medium
+    heatmapdata=med.scaled.long
+    cc = colnames(ths)[-c(1,130,131)]
+    missing = mis} else {
+    L4.TPM=L4.all.TPM.raw
+    heatmapdata=L4.TPM.raw.scaled.long
+    cc=colnames(L4.all.TPM.raw)
+    missing = mis_all
+    }
+  
+  head(heatmapdata)
+  print(ds)
+  
+  flp.neuron.scaled <- heatmapdata[which(heatmapdata$gene_name %in% ss),]
   flp.ids <- as.character(vlookup(unique(flp.neuron.scaled$gene_name), gene_list, result_column = 1, lookup_column = 2))
-  flp.expr <- L4.TPM.medium[flp.ids,, drop=FALSE]
+  flp.expr <- L4.TPM[flp.ids,, drop=FALSE]
   if ( nrow(flp.expr) >1 ) {
     flp.neuron.order <- pheatmap(flp.expr, scale = "row")
     flp.neuron.order <- flp.neuron.order[["tree_row"]]$order
@@ -1249,24 +1263,56 @@ observeEvent(input$PlotHeatmap, {
   #flp.neuron.scaled$gene_name <- fct_rev(flp.neuron.scaled$gene_name)
   
   for( i in missing ){
-    dff <- data.frame(gene_name=i, cell.type= colnames(ths)[-c(1,130,131)], scaled.expr=0, prop=0, Modality="NA")
+    dff <- data.frame(gene_name=i, cell.type= cc, scaled.expr=0, prop=0, Modality="NA")
+    if(ds!="Neurons only"){colnames(dff)[5]<-"tissue"}
     flp.neuron.scaled <- rbind(flp.neuron.scaled, dff)
   }
   
+  if (ds!="Neurons only"){
+    
+    g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
+      geom_point(aes(color = scaled.expr, size = prop)) +
+      theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
+            legend.key = element_blank(),
+            legend.text = element_text(color = "black", size = 14),
+            legend.title = element_text(color = "black", size = 16),
+            axis.title = element_text(size = 16, color = "black")) + 
+      scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) + 
+      scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) + 
+      labs(y = "Gene", x = "Tissue") + theme(panel.grid = element_line(size = 0.2, color = "grey85")) +
+      facet_grid(~tissue, scales = "free_x", space = "free_x", switch = "x") + 
+      theme(strip.placement = "outside", 
+            strip.background.x = element_blank(),
+            axis.text.x.bottom = element_blank(),
+            strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12)) 
+    
+    pg <- ggplotGrob(g)
+    
+    for(i in which(grepl("strip-b", pg$layout$name))){
+      pg$grobs[[i]]$layout$clip <- "off"
+    }
+    
   fnh <-
     function() {
       withProgress(message = "Generating heatmap Plot...", value = 0, {
-        ggplot(flp.neuron.scaled, aes(y =gene_name, x = cell.type)) +
-          geom_point(aes(color = scaled.expr, size = prop)) +
-          #geom_point(data = NULL, aes(y = vec), pch = NA) +
-          theme(axis.text.x.bottom = element_text(angle = 90, vjust= 0.5, size = 7, color = "black", hjust = 1),
-                panel.background = element_blank(), axis.text.y.left = element_text(size = 7, color = "black")) +
-          scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
-          scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
-          labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
-      })
+        grid::grid.draw(pg)      })
     }
-
+  } else {
+  
+    g<-ggplot(flp.neuron.scaled, aes(y =gene_name, x = cell.type)) +
+      geom_point(aes(color = scaled.expr, size = prop)) +
+      #geom_point(data = NULL, aes(y = vec), pch = NA) +
+      theme(axis.text.x.bottom = element_text(angle = 90, vjust= 0.5, size = 7, color = "black", hjust = 1),
+            panel.background = element_blank(), axis.text.y.left = element_text(size = 7, color = "black")) +
+      scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
+      scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
+      labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
+    
+  fnh <-
+    function() {
+      withProgress(message = "Generating heatmap Plot...", value = 0, { g })
+    }
+  }
 
   output$downloadheatmap <-
     downloadHandler(
@@ -1285,18 +1331,8 @@ observeEvent(input$PlotHeatmap, {
         )
       }
     )
-  
-  output$heatmap <-
-    renderPlot(
-      ggplot(flp.neuron.scaled, aes(y =gene_name, x = cell.type)) +
-        geom_point(aes(color = scaled.expr, size = prop)) +
-        #geom_point(data = NULL, aes(y = vec), pch = NA) +
-        theme(axis.text.x.bottom = element_text(angle = 90, vjust= 0.5, size = 7, color = "black", hjust = 1),
-              panel.background = element_blank(), axis.text.y.left = element_text(size = 7, color = "black")) +
-        scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
-        scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
-        labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
-          )
+
+  output$heatmap <- renderPlot(g)
   
   output$dynamic <- renderUI({
     #req(input$plot_hover)
@@ -1313,20 +1349,36 @@ observeEvent(input$PlotHeatmap, {
 })
 
 ### From file
-  
+
   observeEvent(input$PlotHeatmap2, {
+    ds <- input$dataset_heatmap
     inFile <- input$file1
     ss<-read.table(inFile$datapath, header=FALSE)$V1
     
-    ss <- strsplit(as.character(ss), "\n| |\\,|\t")
-    
+    ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")
+    ss <- as.data.frame(ss)[,1]
     ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
     
-    missing <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
     
-    flp.neuron.scaled <- med.scaled.long[which(med.scaled.long$gene_name %in% ss),]
+    if(ds=="Neurons only"){
+      L4.TPM=L4.TPM.medium
+      heatmapdata=med.scaled.long
+      cc = colnames(ths)[-c(1,130,131)]
+      missing = mis} else {
+        L4.TPM=L4.all.TPM.raw
+        heatmapdata=L4.TPM.raw.scaled.long
+        cc=colnames(L4.all.TPM.raw)
+        missing = mis_all
+      }
+    
+    head(heatmapdata)
+    print(ds)
+    
+    flp.neuron.scaled <- heatmapdata[which(heatmapdata$gene_name %in% ss),]
     flp.ids <- as.character(vlookup(unique(flp.neuron.scaled$gene_name), gene_list, result_column = 1, lookup_column = 2))
-    flp.expr <- L4.TPM.medium[flp.ids,, drop=FALSE]
+    flp.expr <- L4.TPM[flp.ids,, drop=FALSE]
     if ( nrow(flp.expr) >1 ) {
       flp.neuron.order <- pheatmap(flp.expr, scale = "row")
       flp.neuron.order <- flp.neuron.order[["tree_row"]]$order
@@ -1336,26 +1388,59 @@ observeEvent(input$PlotHeatmap, {
     }
     flp.neuron.order <- as.character(vlookup(flp.neuron.order, gene_list))
     flp.neuron.scaled$gene_name <- factor(flp.neuron.scaled$gene_name, levels = c(rev(flp.neuron.order), missing))
+    #flp.neuron.scaled$gene_name <- fct_rev(flp.neuron.scaled$gene_name)
     
     for( i in missing ){
-      dff <- data.frame(gene_name=i, cell.type= colnames(ths)[-c(1,130,131)], scaled.expr=0, prop=0, Modality="NA")
+      dff <- data.frame(gene_name=i, cell.type= cc, scaled.expr=0, prop=0, Modality="NA")
+      if(ds!="Neurons only"){colnames(dff)[5]<-"tissue"}
       flp.neuron.scaled <- rbind(flp.neuron.scaled, dff)
     }
     
-    fnh <-
-      function() {
-        withProgress(message = "Generating heatmap Plot...", value = 0, {
-          ggplot(flp.neuron.scaled, aes(y =gene_name, x = cell.type)) +
-            geom_point(aes(color = scaled.expr, size = prop)) +
-            #geom_point(data = NULL, aes(y = vec), pch = NA) +
-            theme(axis.text.x.bottom = element_text(angle = 90, vjust= 0.5, size = 7, color = "black", hjust = 1),
-                  panel.background = element_blank(), axis.text.y.left = element_text(size = 7, color = "black")) +
-            scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
-            scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
-            labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
-        })
+    if (ds!="Neurons only"){
+      
+      g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
+        geom_point(aes(color = scaled.expr, size = prop)) +
+        theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
+              legend.key = element_blank(),
+              legend.text = element_text(color = "black", size = 14),
+              legend.title = element_text(color = "black", size = 16),
+              axis.title = element_text(size = 16, color = "black")) + 
+        scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) + 
+        scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) + 
+        labs(y = "Gene", x = "Tissue") + theme(panel.grid = element_line(size = 0.2, color = "grey85")) +
+        facet_grid(~tissue, scales = "free_x", space = "free_x", switch = "x") + 
+        theme(strip.placement = "outside", 
+              strip.background.x = element_blank(),
+              axis.text.x.bottom = element_blank(),
+              strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12)) 
+      
+      pg <- ggplotGrob(g)
+      
+      for(i in which(grepl("strip-b", pg$layout$name))){
+        pg$grobs[[i]]$layout$clip <- "off"
       }
-    
+      
+      fnh <-
+        function() {
+          withProgress(message = "Generating heatmap Plot...", value = 0, {
+            grid::grid.draw(pg)      })
+        }
+    } else {
+      
+      g<-ggplot(flp.neuron.scaled, aes(y =gene_name, x = cell.type)) +
+        geom_point(aes(color = scaled.expr, size = prop)) +
+        #geom_point(data = NULL, aes(y = vec), pch = NA) +
+        theme(axis.text.x.bottom = element_text(angle = 90, vjust= 0.5, size = 7, color = "black", hjust = 1),
+              panel.background = element_blank(), axis.text.y.left = element_text(size = 7, color = "black")) +
+        scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
+        scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
+        labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
+      
+      fnh <-
+        function() {
+          withProgress(message = "Generating heatmap Plot...", value = 0, { g })
+        }
+    }
     
     output$downloadheatmap <-
       downloadHandler(
@@ -1375,25 +1460,15 @@ observeEvent(input$PlotHeatmap, {
         }
       )
     
-    output$heatmap <-
-      renderPlot(
-        ggplot(flp.neuron.scaled, aes(y =gene_name, x = cell.type)) +
-          geom_point(aes(color = scaled.expr, size = prop)) +
-          #geom_point(data = NULL, aes(y = vec), pch = NA) +
-          theme(axis.text.x.bottom = element_text(angle = 90, vjust= 0.5, size = 7, color = "black", hjust = 1),
-                panel.background = element_blank(), axis.text.y.left = element_text(size = 7, color = "black")) +
-          scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
-          scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
-          labs(y = "Gene", x= "Neuron") + theme(panel.grid = element_line(size = 0.5, color = "grey85"))
-      )
+    output$heatmap <- renderPlot(g)
     
-     #output$dynamic <- renderUI({
-    #   req(input$plot_hover)
-     #  verbatimTextOutput("vals", placeholder = TRUE)
-     #})
-     
+    output$dynamic <- renderUI({
+      #req(input$plot_hover)
+      verbatimTextOutput("vals", placeholder = TRUE)
+    })
+    
     output$vals <- renderPrint({
-      #hover <- input$plot_hover 
+      hover <- input$plot_hover 
       #print(input$plot_hover) # list
       y <- nearPoints(flp.neuron.scaled, input$plot_hover)
       req(nrow(y) != 0)
