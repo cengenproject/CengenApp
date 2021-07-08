@@ -16,6 +16,7 @@ library(tidyverse)
 library(pheatmap)
 library(expss)
 library(plotly)
+library(xlsx)
 #library(cairo)
 #library(MAST)
 options(repos = BiocManager::repositories())
@@ -750,83 +751,7 @@ server <- function(input, output) {
       )
   })
   
-  
-  ### Tables of DEX ----
-  # observeEvent(input$DEXButton, {
-  #   print(input$ClusterCells1)
-  #   withProgress(
-  #     message = paste0(
-  #       'Calculating DEX between ',
-  #       input$ClusterCells1,
-  #       ' and ',
-  #       input$ClusterCells2,
-  #       " using ",
-  #       input$test
-  #     ),
-  #     value = 0,
-  #     {
-  #       Idents(object = allCells) <- "Neuron.type"
-  #       tableDEX <-
-  #         FindMarkers(
-  #           allCells,
-  #           ident.1 = input$ClusterCells1,
-  #           ident.2 = input$ClusterCells2,
-  #           test.use = input$test
-  #         )
-  #       tableDEX$gene <- rownames(tableDEX)
-  #       tableDEX <-
-  #         merge(
-  #           tableDEX,
-  #           gene_list,
-  #           by.x = "gene",
-  #           by.y = "gene_id",
-  #           all.x = TRUE
-  #         )
-  #       tableDEX <- tableDEX %>% arrange(p_val_adj)
-  #       if (input$test != "roc") {
-  #         tableDEX$p_val <-
-  #           as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
-  #         tableDEX$p_val_adj <-
-  #           as.numeric(formatC(
-  #             tableDEX$p_val_adj,
-  #             format = "e",
-  #             digits = 3
-  #           ) %>% gsub(" ", "", .))
-  #         tableDEX$avg_logFC <-
-  #           as.numeric(formatC(tableDEX$avg_logFC, digits = 3) %>% gsub(" ", "", .))
-  #       }
-  #     }
-  #   )
-  #   if (nrow(tableDEX) > 0) {
-  #     output$MarkTable_ClusterCells <- DT::renderDataTable({
-  #       DT::datatable(
-  #         tableDEX %>% head(input$topM2),
-  #         options = list(pageLength = input$topM2),
-  #         style = 'jQueryUI',
-  #         class = 'cell-border stripe',
-  #         rownames = FALSE
-  #       ) %>% formatStyle(c(1:8), color = "black")
-  #     })
-  #     output$downloadDEX <-
-  #       downloadHandler(
-  #         filename = function() {
-  #           paste("DEXGens-",
-  #                 input$ClusterCells1,
-  #                 "",
-  #                 input$ClusterCells2,
-  #                 ".csv",
-  #                 sep = "")
-  #         },
-  #         content = function(file) {
-  #           write.csv(tableDEX, file, sep = "\t")
-  #         }
-  #       )
-  #   } else {
-  #     output$MarkTable_ClusterCells <-
-  #       "No features pass logfc.threshold threshold"
-  #   }
-  # }, ignoreNULL = TRUE)
-  
+ 
   observeEvent(input$DEXButton, {
     print(input$batch1)
     print(input$batch2)
@@ -957,22 +882,32 @@ server <- function(input, output) {
   
   observeEvent(input$TCell, {
     withProgress(message = "Obtaining information...", value = 0, {
-      print(input$Tcell_cut)
-      t4 <-
-        filter(ths, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, input$Tcell_name)
-      t4d <-
-        filter(ths, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, X, input$Tcell_name)
-      t4 <- t4[rev(order(t4[, 2])), ]
-      t4d <- t4d[rev(order(t4d[, 3])), ]
-      t4[, 2] <-
-        as.numeric(formatC(t4[, 2], digits = 3, format = "f") %>% gsub(" ", "", .))
-      colnames(t4) <- c("Gene name", "Expression level")
-      t4d[, 3] <-
-        as.numeric(formatC(t4d[, 3], digits = 3, format = "f") %>% gsub(" ", "", .))
-      colnames(t4d) <- c("Gene name", "Gene ID", "Expression level")
-      output$Tcell_name_table <-
-        DT::renderDataTable({
-          DT::datatable(
+      
+      if( input$Tcell_cut == "All Cells Unfiltered" ) { th = L4.all.TPM.raw_th } else { th = ths }
+      
+      output$Error1 <-
+        isolate(renderText({
+          shiny::validate(need(
+            input$Tcell_name %in% colnames(th),
+            message = paste0(
+              "WARNING: If you want to query non-neuronal cells select All Cells Unfiltered"
+            )
+          ))
+        }))
+      
+      if (input$Tcell_name %in% colnames(th)) {
+        t4 <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, input$Tcell_name)
+        t4d <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, X, input$Tcell_name)
+        t4 <- t4[rev(order(t4[, 2])), ]
+        t4d <- t4d[rev(order(t4d[, 3])), ]
+        t4[, 2] <- as.numeric(formatC(t4[, 2], digits = 3, format = "f") %>% gsub(" ", "", .))
+        colnames(t4) <- c("Gene name", "Expression level")
+        t4d[, 3] <- as.numeric(formatC(t4d[, 3], digits = 3, format = "f") %>% gsub(" ", "", .))
+        colnames(t4d) <- c("Gene name", "Gene ID", "Expression level")
+      
+       output$Tcell_name_table <-
+         DT::renderDataTable({
+           DT::datatable(
             t4,
             options = list(pageLength = 10, autoWidth = TRUE),
             rownames = FALSE,
@@ -980,6 +915,7 @@ server <- function(input, output) {
             class = 'cell-border stripe'
           ) %>% formatStyle(c(1:2), color = "black")
         })
+      
       output$get_download_gene <- renderUI({   
         req(input$TCell)
         downloadButton('downloadGene', "Download table")
@@ -1001,7 +937,10 @@ server <- function(input, output) {
             write.csv(t4d , file, dec = ".", sep = "\t")
           }
         )
-    })
+    
+      } else { output$Tcell_name_table  <- NULL }
+      
+  })
   })
   
   observeEvent(input$TGene, {
@@ -1016,23 +955,29 @@ server <- function(input, output) {
     }
     
     if (g %in% gene_list$gene_id) {
-      var <- filter(gene_list, gene_id == g)$gene_name
+      var <- dplyr::filter(gene_list, gene_id == g)$gene_name
     }
     
     if (g %in% gene_list$seqnames) {
-      var <- filter(gene_list, seqnames == g)$gene_name
+      var <- dplyr::filter(gene_list, seqnames == g)$gene_name
     }
     
+    if( input$Tgene_cut == "All Cells Unfiltered" ) { 
+      th = L4.all.TPM.raw_th
+      columns <- c(1:169)
+    } else { 
+      th = ths
+      columns <- c(2:129)
+    }
     withProgress(message = "Obtaining information...", value = 0, {
-      if (var %in% filter(ths, threshold == input$Tgene_cut)$gene_name) {
-        print("YES")
+      if (var %in% dplyr::filter(th, threshold == input$Tgene_cut)$gene_name) {
         t3 <-
           sort(
             filter(
-              ths,
+              th,
               gene_name == var,
               threshold == input$Tgene_cut
-            )[, 2:129],
+            )[, columns],
             decreasing = TRUE
           )
         t3 <- data.frame(CellType = names(t3), expression = as.numeric(t3))
@@ -1045,7 +990,7 @@ server <- function(input, output) {
         output$text1 <-
           isolate(renderText({
             shiny::validate(need(
-              !filter(gene_list, gene_name == var)$gene_id %in% utr,
+              !dplyr::filter(gene_list, gene_name == var)$gene_id %in% utr,
               message = paste0(
                 "WARNING: ",
                 input$Tgene_name,
@@ -1099,38 +1044,43 @@ server <- function(input, output) {
     })
   })
   
-  observeEvent(input$Tgene_name_batch, {
+  observeEvent( list(input$Tgene_name_batch, input$Tgene_cut_batch) , {
     
-    
-    gns1 <- unlist(strsplit(input$Tgene_name_batch, split = ","))
-    gns1 <- gsub(" ", "", as.character(gns1))
+    gns1 <- strsplit(as.character(input$Tgene_name_batch), "\n| |\\,|\t")
+    gns1 <- as.data.frame(gns1)[,1]
     gns <- unique(c(gns1, filter(gene_list, gene_id %in% gns1 | seqnames %in% gns1)$gene_name))
-    print(gns)
-    req(input$Tgene_name_batch)
     
-    if (length(which(gns %in% unique(ths$gene_name))) == length(gns1)) {
-      print("YES")
+    if( input$Tgene_cut_batch == "All Cells Unfiltered" ) { 
+      th = L4.all.TPM.raw_th
+      columns <- c(171, 170, 172, c(1:169) )
+    } else { 
+      th = ths
+      columns <- c(1, 131, 130, c(2:129))    
+    }
+    
+    if (length(which(gns %in% unique(th$gene_name))) > 0) {
       tb <-
-        filter(ths,
+        dplyr::filter(th,
                gene_name %in% gns,
-               threshold == input$Tgene_cut_batch)[, c(1, 131, 130, c(2:129))]
-      output$textb <- renderText({
-        ""
-      })
+               threshold == input$Tgene_cut_batch)[, columns]
+      output$textb <- renderText({""})
+      head(tb)
+      req(input$Tgene_name_batch)
+      
       output$TGeneBatch <-
         downloadHandler(
           filename = function() {
             paste(
-              "GenesExpressing-",
-              paste(gns1, collapse = ","),
+              "GenesExpressing-BATCH",
               "-thrs",
               input$Tgene_cut_batch,
-              ".csv",
+              ".xlsx",
               sep = ""
             )
           },
           content = function(file) {
-            write.csv(tb, file, dec = ".", sep = "\t")
+            write.xlsx(tb, file, sheetName = "Sheet1", 
+                       col.names = TRUE, row.names = TRUE, append = FALSE)
           }
         )
       
@@ -1139,7 +1089,7 @@ server <- function(input, output) {
       tb <- NULL
       output$textb <-
         renderText({
-          "One or more genes is not expressed or does not exist"
+          "No gene found with this name in the dataset"
         })
     }
   })
@@ -1239,7 +1189,7 @@ observeEvent(input$PlotHeatmap, {
     heatmapdata=med.scaled.long
     cc = colnames(ths)[-c(1,130,131)]
     missing = mis} else {
-    L4.TPM=L4.all.TPM.raw
+    L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
     heatmapdata=L4.TPM.raw.scaled.long
     cc=colnames(L4.all.TPM.raw)
     missing = mis_all
@@ -1270,6 +1220,7 @@ observeEvent(input$PlotHeatmap, {
   
   if (ds!="Neurons only"){
     
+   if(nrow(flp.expr) >1){
     g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
       geom_point(aes(color = scaled.expr, size = prop)) +
       theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
@@ -1285,6 +1236,19 @@ observeEvent(input$PlotHeatmap, {
             strip.background.x = element_blank(),
             axis.text.x.bottom = element_blank(),
             strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12)) 
+   } else {
+     
+     g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
+       geom_point(aes(color = scaled.expr, size = prop)) +
+       theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
+             legend.key = element_blank(),
+             legend.text = element_text(color = "black", size = 14),
+             legend.title = element_text(color = "black", size = 16),
+             axis.title = element_text(size = 16, color = "black")) + 
+       scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) + 
+       scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) + 
+       labs(y = "Gene", x = "Tissue") + theme(panel.grid = element_line(size = 0.2, color = "grey85"))
+   }
     
     pg <- ggplotGrob(g)
     
@@ -1367,7 +1331,7 @@ observeEvent(input$PlotHeatmap, {
       heatmapdata=med.scaled.long
       cc = colnames(ths)[-c(1,130,131)]
       missing = mis} else {
-        L4.TPM=L4.all.TPM.raw
+        L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
         heatmapdata=L4.TPM.raw.scaled.long
         cc=colnames(L4.all.TPM.raw)
         missing = mis_all
@@ -1398,21 +1362,35 @@ observeEvent(input$PlotHeatmap, {
     
     if (ds!="Neurons only"){
       
-      g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
-        geom_point(aes(color = scaled.expr, size = prop)) +
-        theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
-              legend.key = element_blank(),
-              legend.text = element_text(color = "black", size = 14),
-              legend.title = element_text(color = "black", size = 16),
-              axis.title = element_text(size = 16, color = "black")) + 
-        scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) + 
-        scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) + 
-        labs(y = "Gene", x = "Tissue") + theme(panel.grid = element_line(size = 0.2, color = "grey85")) +
-        facet_grid(~tissue, scales = "free_x", space = "free_x", switch = "x") + 
-        theme(strip.placement = "outside", 
-              strip.background.x = element_blank(),
-              axis.text.x.bottom = element_blank(),
-              strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12)) 
+      if(nrow(flp.expr) >1){
+        g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
+          geom_point(aes(color = scaled.expr, size = prop)) +
+          theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
+                legend.key = element_blank(),
+                legend.text = element_text(color = "black", size = 14),
+                legend.title = element_text(color = "black", size = 16),
+                axis.title = element_text(size = 16, color = "black")) + 
+          scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) + 
+          scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) + 
+          labs(y = "Gene", x = "Tissue") + theme(panel.grid = element_line(size = 0.2, color = "grey85")) +
+          facet_grid(~tissue, scales = "free_x", space = "free_x", switch = "x") + 
+          theme(strip.placement = "outside", 
+                strip.background.x = element_blank(),
+                axis.text.x.bottom = element_blank(),
+                strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12)) 
+      } else {
+        
+        g <- ggplot(flp.neuron.scaled, aes(y = gene_name, x = cell.type)) + 
+          geom_point(aes(color = scaled.expr, size = prop)) +
+          theme(panel.background = element_blank(), axis.text.y.left = element_text(size = 12, color = "black"),
+                legend.key = element_blank(),
+                legend.text = element_text(color = "black", size = 14),
+                legend.title = element_text(color = "black", size = 16),
+                axis.title = element_text(size = 16, color = "black")) + 
+          scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) + 
+          scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) + 
+          labs(y = "Gene", x = "Tissue") + theme(panel.grid = element_line(size = 0.2, color = "grey85"))
+      }
       
       pg <- ggplotGrob(g)
       
