@@ -54,13 +54,8 @@ msg <- filter(gene_list, gene_id %in% utr)$gene_name %>% paste(., collapse = ", 
 
 ## UI ----
 ui <- fluidPage(
-  #tags$head(includeHTML(("tracking.html"))),
   tags$head(includeHTML(("google-analytics-script2.html"))),
-  #tags$head(includeScript("tracking.js")),
   theme = "Theme.min.css",
-  #shinytheme("flatly"),
-  #background-color: #2f2d2d;
-  #shinythemes::themeSelector(),
   tags$head(tags$style(
     HTML(".shiny-output-error-validation {color: red;}")
   )),
@@ -69,6 +64,7 @@ ui <- fluidPage(
   titlePanel(
     "Discovery and analysis of the C. elegans Neuronal Gene Expression Network -- CeNGEN"
   ),
+  tags$a(href="http://www.cengen.org/single-cell-rna-seq/", "CeNGENApp Help and Documentation"),
   hr(),
   add_busy_spinner(
     spin = "double-bounce",
@@ -80,9 +76,6 @@ ui <- fluidPage(
     height = "50px",
     width = "50px"
   ),
-  #add_busy_bar(color = "darkorange"),
-  # Side panel entering what to plot ----
-  
   
   # Main panel showing plots ----
   tabsetPanel(
@@ -98,6 +91,7 @@ ui <- fluidPage(
         ),
         h6("Select one of four thresholds for expression:"),
         h6("1 (least stringent) to 4 (most stringent) or select unfiltered data"),
+        h6("Choose All Cells Unfiltered to query the entire unfiltered dataset, including non-neuronal cells"),
         hr(),
         fluidRow(
           column(1),
@@ -106,13 +100,13 @@ ui <- fluidPage(
             selectInput(
               inputId = "Tcell_name",
               label = "Select cell type",
-              choices = colnames(ths)[2:129],
+              choices = colnames(L4.all.TPM.raw_th)[1:169],
               selected = "ADA"
             ),
             selectInput(
               inputId = "Tcell_cut",
               label = "Select threshold",
-              choices = c(1:4, "Unfiltered"),
+              choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
             actionButton("TCell", "Expressed genes", icon = icon("hand-o-right"))
@@ -129,7 +123,7 @@ ui <- fluidPage(
             selectInput(
               inputId = "Tgene_cut",
               label = "Select threshold",
-              choices = c(1:4, "Unfiltered"),
+              choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
             actionButton("TGene", "Which cell types", icon = icon("hand-o-right"))
@@ -138,15 +132,17 @@ ui <- fluidPage(
             2,
             offset = 0,
             style = 'padding:5px;',
-            textInput(
+            textAreaInput(
               inputId = "Tgene_name_batch",
               label = "Query multiple genes for download",
-              value = "zig-4,ins-26"
+              value = "flp-1\nflp-2,flp-3,WBGene00001447\nWBGene00001448\nflp-6\nflp-7\nflp-8\nflp-9\nflp-10\nflp-11\nflp-12\nflp-13\nflp-14\nflp-15\nflp-16\nflp-17\nflp-18\nflp-19\nflp-20\nflp-21\nflp-22\nflp-23\nflp-24\nflp-25\nflp-26\nflp-27\nflp-28\nflp-32\nflp-33\nflp-34",
+              width = "500px",
+              height = "100px"
             ),
             selectInput(
               inputId = "Tgene_cut_batch",
               label = "Select threshold",
-              choices = c(1:4, "Unfiltered"),
+              choices = c(1:4, "Unfiltered", "All Cells Unfiltered" ),
               selected = 2
             ),
             downloadButton("TGeneBatch", "Download batch"),
@@ -162,10 +158,10 @@ ui <- fluidPage(
           column(
             4,
             br(),
+            span(textOutput("Error1"), style ="color:red"),
             DT::dataTableOutput("Tcell_name_table"),
             br(),
             uiOutput("get_download_gene")
-            #downloadButton('downloadGene', "Download table")
           ),
           #column(width = 1, offset = 0, style='padding:5px;'),
           column(
@@ -580,10 +576,20 @@ ui <- fluidPage(
             width = "500px",
             height = "100px"
           ),
-          actionButton(
-            "PlotHeatmap",
-            "Plot heatmap from list",
-            icon = icon("hand-o-right")
+        
+         
+            selectInput(
+              inputId = "dataset_heatmap",
+              label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
+              choices = c("Neurons only", "All cell types")
+            ),    
+         
+            
+              actionButton(
+              "PlotHeatmap","Plot heatmap from list",
+              icon = icon("hand-o-right")
+             
+          
           ),
           hr(),
           fluidRow(
