@@ -4,7 +4,7 @@
 #options(repos = BiocManager::repositories())
 #options("repos")
 
-load("Dataset_1May_2021.rda")
+load("Dataset_1May_2021_noSeurat.rda")
 
 utr <- c("WBGene00023498","WBGene00023497","WBGene00004397","WBGene00006843",
          "WBGene00004010","WBGene00006789","WBGene00001135","WBGene00001079",
@@ -1357,3 +1357,73 @@ FeaturePlot3 <- function(
   }
   return(plots)
 }
+
+
+
+
+# Perform DE ----
+# note this is a rewrite of Seurat::FindMarkers that does only the minimum required here,
+# and works directly with the content of the Seurat object( not a full Seurat object)
+perform_de <- function(allCells.data, allCells.metadata, ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf, logfc.threshold = 0.25){
+  cells.1 <- allCells.metadata$Neuron.type %in% ident.1
+  
+  if(!is.null(ident.2)){
+    cells.2 <- allCells.metadata$Neuron.type %in% ident.2
+  } else{
+    cells.2 <- !( allCells.metadata$Neuron.type %in% ident.1 )
+  }
+  
+  
+  expr.1 <- allCells.data[,cells.1]
+  expr.2 <- allCells.data[,cells.2]
+  
+  features <- rownames(allCells.data)
+  
+  fc.results <- FoldChange(object = allCells.data,
+                           slot = "data", 
+                           cells.1 = which(cells.1), cells.2 = which(cells.2),
+                           features = features,
+                           mean.fxn = function(x) {
+                             return(log(x = rowMeans(x = expm1(x = x)) + 1, 
+                                        base = 2))
+                           }, fc.name = "avg_log2FC",
+                           pseudocount.use = 1, base = 2)
+  
+  # filter features
+  alpha.min <- pmax(fc.results$pct.1, fc.results$pct.2)
+  alpha.diff <- alpha.min - pmin(fc.results$pct.1, fc.results$pct.2)
+  features <- rownames(fc.results)[alpha.min >= min.pct &
+                                     alpha.diff >= min.diff.pct]
+  if (length(features) == 0) {
+    warning("No features pass min threshold; returning empty data.frame")
+  }
+  
+  
+  features.diff <- rownames(fc.results)[abs(fc.results[["avg_log2FC"]]) >= logfc.threshold]
+  
+  features <- intersect(features, features.diff)
+  if (length(features) == 0) {
+    warning("No features pass logfc.threshold threshold; returning empty data.frame")
+  }
+  
+  
+  data.use <- allCells.data[features, c(which(cells.1), which(cells.2)), drop = FALSE]
+  j <- seq_len(sum(cells.1))
+  
+  
+  p_val <- sapply(X = seq_along(features),
+                  FUN = function(x) {
+                    min(2 * min(limma::rankSumTestWithCorrelation(index = j, 
+                                                                  statistics = data.use[x, ])), 1)
+                  })
+  
+  de.results <- cbind(data.frame(p_val),
+                      fc.results[features, , drop = FALSE])
+  de.results <- de.results[order(de.results$p_val,
+                                 -de.results[, 1]), ]
+  de.results$p_val_adj = p.adjust(p = de.results$p_val, 
+                                  method = "bonferroni", n = nrow(allCells.data))
+  de.results
+}
+
+

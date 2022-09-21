@@ -46,647 +46,647 @@ utr <-
 
 server <- function(input, output) {
   ### Plot features ----
-  observeEvent(input$PlotButton, {
-    withProgress(message = "Generating Plots...",
-                 value = 0,
-                 expr = {
-                   if (exists("id1")) {
-                     removeNotification(id1)
-                   }
-                   
-                   if (input$dataset == "Neurons only") {
-                     all <- allNeurons
-                   }
-                   if (input$dataset == "All cell types") {
-                     all <- allCells
-                   }
-                   Idents(object = all) <- "Neuron.type"
-                   ranges <- reactiveValues(x = NULL, y = NULL)
-                   observeEvent(input$plotPermanent_dblclick, {
-                     brush <- input$plotPermanent_brush
-                     if (!is.null(brush)) {
-                       ranges$x <- c(brush$xmin, brush$xmax)
-                       ranges$y <- c(brush$ymin, brush$ymax)
-                     } else {
-                       ranges$x <- NULL
-                       ranges$y <- NULL
-                     }
-                   })
-                   
-                   
-                   plots <- input$Plots
-                   if (plots == 'Metadata') {
-                     varToPlot <- input$featuresMetadata
-                     featuresInput <- function() {
-                       if (is.null(all)) {
-                         return(NULL)
-                       } else{
-                         withProgress(message = "Generating Features Plot...", value = 0, {
-                           DimPlot2(
-                             object = all,
-                             reduction = "umap",
-                             group.by = 'Neuron.type',
-                             label = TRUE,
-                             pt.size = 0.7,
-                             repel = TRUE,
-                             l1 = ranges$x,
-                             l2 = ranges$y
-                           ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                 ylim = ranges$y,
-                                                                                 expand = FALSE)
-                         })
-                       }
-                     }
-                     
-                     if (input$featuresMetadata == 'Neuron.type' &&
-                         input$dataset == "Neurons only") {
-                       Type <- input$Cluster
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn1 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Neuron.type",
-                               cells.highlight = names(all$Neuron.type[all$Neuron.type == Type]),
-                               cols.highlight = "red",
-                               pt.size = 0.7,
-                               l1 = ranges$x,
-                               l2 = ranges$y
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn1()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("NeuronType-", Type, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn1(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     if (input$featuresMetadata == 'Detection' &&
-                         input$dataset == "Neurons only") {
-                       Det <- input$Cluster3
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn3 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Detection" ,
-                               cells.highlight = names(all$Detection[all$Detection == Det]),
-                               cols.highlight = "red",
-                               pt.size = 0.7
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn3()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("Detection-", Det, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn3(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     if (input$featuresMetadata == 'Experiment' &&
-                         input$dataset == "Neurons only") {
-                       Exp <- input$Cluster2
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn2 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Experiment",
-                               cells.highlight = names(all$Experiment[all$Experiment == Exp]),
-                               cols.highlight = "red",
-                               pt.size = 0.7
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn2()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("Experiment-", Exp, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn2(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     if (input$featuresMetadata2 == 'Neuron.type' &&
-                         input$dataset == "All cell types") {
-                       Type <- input$Cluster.2
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn1 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Neuron.type",
-                               cells.highlight = names(all$Neuron.type[all$Neuron.type == Type]),
-                               cols.highlight = "red",
-                               pt.size = 0.7,
-                               l1 = ranges$x,
-                               l2 = ranges$y
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn1()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("NeuronType-", Type, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn1(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     if (input$featuresMetadata2 == 'Detection' &&
-                         input$dataset == "All cell types") {
-                       Det <- input$Cluster3.2
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn3 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Detection" ,
-                               cells.highlight = names(all$Detection[all$Detection == Det]),
-                               cols.highlight = "red",
-                               pt.size = 0.7
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn3()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("Detection-", Det, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn3(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     if (input$featuresMetadata2 == 'Experiment' &&
-                         input$dataset == "All cell types") {
-                       Exp <- input$Cluster2.2
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn2 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Experiment",
-                               cells.highlight = names(all$Experiment[all$Experiment == Exp]),
-                               cols.highlight = "red",
-                               pt.size = 0.7
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn2()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("Experiment-", Exp, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn2(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     if (input$featuresMetadata2 == 'Tissue.type' &&
-                         input$dataset == "All cell types") {
-                       output$SinglePlot <-
-                         renderPlot({
-                           featuresInput()
-                         }, height = 400, width = 600)
-                       fn4 <-
-                         function() {
-                           withProgress(message = "Generating Features Plot...", value = 0, {
-                             DimPlot2(
-                               object = all,
-                               reduction = "umap",
-                               group.by = "Tissue.type",
-                               cells.highlight = names(all$Tissue.type[all$Tissue.type == input$Cluster4]),
-                               cols.highlight = "red",
-                               pt.size = 0.7
-                             ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                                   ylim = ranges$y,
-                                                                                   expand = FALSE)
-                           })
-                         }
-                       output$High <-
-                         renderPlot({
-                           fn4()
-                         }, height = 400, width = 600, execOnResize = FALSE)
-                       output$downloadHigh <-
-                         downloadHandler(
-                           filename = function() {
-                             filename = paste("Tissue-", input$Cluster4, ".png", sep = "")
-                           },
-                           content = function(file) {
-                             ggsave(
-                               fn4(),
-                               file = file,
-                               height = 100,
-                               width = 150,
-                               units = "mm" ,
-                               limitsize = FALSE,
-                               device = "png"
-                             )
-                           }
-                         )
-                     }
-                     
-                     output$downloadClust <-
-                       downloadHandler(
-                         filename = function() {
-                           filename = paste("Clusters.png", sep = "")
-                         },
-                         content = function(file) {
-                           ggsave(
-                             featuresInput(),
-                             file = file,
-                             height = 200,
-                             width = 300,
-                             units = "mm" ,
-                             limitsize = FALSE,
-                             device = "png"
-                           )
-                         }
-                       )
-                   }
-                   
-                   ### Plot genes individual ----
-                   if (plots == 'Individual genes') {
-                     g <- input$GeneName
-                     print(g)
-                     
-                     if (g %in% gene_list$gene_name) {
-                       varToPlot <- filter(gene_list, gene_name == g)$gene_id
-                     }
-                     
-                     if (g %in% gene_list$gene_id) {
-                       varToPlot <- g
-                     }
-                     
-                     if (g %in% gene_list$seqnames) {
-                       varToPlot <- filter(gene_list, seqnames == g)$gene_id
-                     }
-                     
-                     output$geneUTR <-
-                       isolate(renderText({
-                         shiny::validate(need(
-                           !varToPlot %in% utr,
-                           message = paste0(
-                             "WARNING: ",
-                             g,
-                             " expression is unreliable as it has been overexpressed to generate transgenic strains."
-                           )
-                         ))
-                       }))
-                     
-                     
-                     f <- function() {
-                       DimPlot2(
-                         object = all,
-                         reduction = "umap",
-                         group.by = "Neuron.type",
-                         label = TRUE,
-                         repel = TRUE,
-                         l1 = ranges$x,
-                         l2 = ranges$y
-                       ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
-                                                                             ylim = ranges$y,
-                                                                             expand = TRUE)
-                     }
-                     f2 <- function() {
-                       RidgePlot(
-                         object = all,
-                         features = as.character(varToPlot),
-                         ncol = 1,
-                         group.by = "Neuron.type",
-                         sort = "decreasing"
-                       ) + theme(
-                         legend.position = "none",
-                         panel.grid = element_blank(),
-                         panel.background = element_blank()
-                       )
-                     }
-                     f3 <-
-                       function() {
-                         FeaturePlot3(
-                           object = all,
-                           features = as.character(varToPlot),
-                           reduction = "umap",
-                           pt.size = 0.7,
-                           combine = TRUE,
-                           cols = c("beige", "darkred"),
-                           coord.fixed = FALSE,
-                           ranges = ranges
-                         )
-                       }
-                     
-                     output$SinglePlot2 <- renderPlot({
-                       shiny::validate(
-                         need(as.character(g) %in% gene_list$gene_name | as.character(g) %in% gene_list$gene_id | as.character(g) %in% gene_list$seqnames,  message = "Gene name is not present in this dataset or wrong name")
-                       )
-                       f()
-                     }, height = 400, width = 600, execOnResize = FALSE)
-                     output$FeaturePlot <-  renderPlot({
-                       shiny::validate(
-                         need(as.character(g) %in% gene_list$gene_name | as.character(g) %in% gene_list$gene_id | as.character(g) %in% gene_list$seqnames,  message = "Gene name is not present in this dataset or wrong name")
-                       )
-                       f3()
-                     }, height = 400, width = 600, execOnResize = FALSE)
-                     output$Violin <- renderPlot({
-                       shiny::validate(
-                         need(as.character(g) %in% gene_list$gene_name | as.character(g) %in% gene_list$gene_id | as.character(g) %in% gene_list$seqnames,  message = "Gene name is not present in this dataset or wrong name")
-                       )
-                       f2()
-                     }, height = 1300, width = 600)
-                     
-                     
-                     output$downloadExp <-
-                       downloadHandler(
-                         filename = function() {
-                           filename = paste("Dim-", varToPlot, ".png", sep = "")
-                         },
-                         content = function(file) {
-                           ggsave(
-                             f3(),
-                             file = file,
-                             height = 100,
-                             width = 150,
-                             units = "mm" ,
-                             limitsize = FALSE,
-                             device = "png"
-                           )
-                         }
-                       )
-                     output$downloadViolin <-
-                       downloadHandler(
-                         filename = function() {
-                           filename = paste("Violin-", varToPlot, ".png", sep = "")
-                         },
-                         content = function(file) {
-                           ggsave(
-                             f2(),
-                             file = file,
-                             height = 1300,
-                             width = 600,
-                             units = "mm" ,
-                             limitsize = FALSE,
-                             device = "png"
-                           )
-                         }
-                       )
-                   }
-                   
-                   ### Plot genes colocoalization ----
-                   
-                   if (plots == 'Colocalization') {
-                     g1 <- input$ColocalizationGenes1
-                     g2 <- input$ColocalizationGenes2
-                     #gene1 <- filter(gene_list, gene_name == g1)$gene_id
-                     #gene2 <- filter(gene_list, gene_name == g2)$gene_id
-                     
-                     if (g1 %in% gene_list$gene_name) {
-                       varToPlot1 <- filter(gene_list, gene_name == g1)$gene_id
-                     }
-                     
-                     if (g1 %in% gene_list$gene_id) {
-                       varToPlot1 <- g1
-                     }
-                     
-                     if (g1 %in% gene_list$seqnames) {
-                       varToPlot1 <- filter(gene_list, seqnames == g1)$gene_id
-                     }
-                     
-                     if (g2 %in% gene_list$gene_name) {
-                       varToPlot2 <- filter(gene_list, gene_name == g2)$gene_id
-                     }
-                     
-                     if (g2 %in% gene_list$gene_id) {
-                       varToPlot2 <- g2
-                     }
-                     
-                     if (g2 %in% gene_list$seqnames) {
-                       varToPlot2 <- filter(gene_list, seqnames == g2)$gene_id
-                     }
-                     
-                     
-                     featuresInput <- function() {
-                       if (is.null(all)) {
-                         return(NULL)
-                       } else{
-                         varBlend <- input$blend
-                         withProgress(message = "Generating Features Plot...", value =
-                                        0, {
-                                          FeaturePlot2(
-                                            object = all,
-                                            features = c(
-                                              #as.character(filter(gene_list, gene_name == g1)$gene_id),
-                                              #as.character(filter(gene_list, gene_name == g2)$gene_id)
-                                              varToPlot1, varToPlot2
-                                            ),
-                                            reduction = "umap",
-                                            pt.size = 0.7,
-                                            combine = TRUE,
-                                            cols = c("beige", "darkred"),
-                                            blend = TRUE,
-                                            blend.threshold = varBlend,
-                                            coord.fixed = TRUE,
-                                            ranges = ranges
-                                          )
-                                        })
-                       }
-                     }
-                     
-                     output$SinglePlotDouble <- isolate(renderPlot({
-                       shiny::validate(
-                         need(as.character(g1) %in% gene_list$gene_name | as.character(g1) %in% gene_list$gene_id | as.character(g1) %in% gene_list$seqnames,  message = "Gene name 1 is not present in this dataset or wrong name")
-                       )
-                       shiny::validate(
-                         need(as.character(g2) %in% gene_list$gene_name | as.character(g2) %in% gene_list$gene_id | as.character(g2) %in% gene_list$seqnames,  message = "Gene name 2 is not present in this dataset or wrong name")
-                       )
-                       featuresInput()
-                     }, height = 400, width = 1000))
-                     output$gene1utr <-
-                       renderText({
-                         shiny::validate(need(
-                           !varToPlot1 %in% utr ,
-                           message = paste0(
-                             "WARNING: ",
-                             g1,
-                             " expression is unreliable as it has been overexpressed to generate transgenic strains."
-                           )
-                         ))
-                       })
-                     output$gene2utr <-
-                       renderText({
-                         shiny::validate(need(
-                           !varToPlot2 %in% utr ,
-                           message = paste0(
-                             "WARNING: ",
-                             g2,
-                             " expression is unreliable as it has been overexpressed to generate transgenic strains."
-                           )
-                         ))
-                       })
-                     output$downloadCol <-
-                       downloadHandler(
-                         filename = function() {
-                           filename = paste("Colocalization-", g1, "_", g2, ".png", sep = "")
-                         },
-                         content = function(file) {
-                           ggsave(
-                             featuresInput(),
-                             file = file,
-                             height = 200,
-                             width = 500,
-                             units = "mm" ,
-                             limitsize = FALSE,
-                             device = "png"
-                           )
-                         }
-                       )
-                     output$SinglePlotPermanent <-
-                       renderPlot(
-                         DimPlot2(
-                           object = all,
-                           reduction = "umap",
-                           group.by = "Neuron.type",
-                           label = TRUE,
-                           repel = TRUE,
-                           l1 = ranges$x,
-                           l2 = ranges$y
-                         ) + theme(legend.position = "none") + coord_cartesian(
-                           xlim = ranges$x,
-                           ylim = ranges$y,
-                           expand = FALSE
-                         ),
-                         height = 400,
-                         width = 600,
-                         execOnResize = FALSE
-                       )
-                     
-                   }
-                 })
-    
-  })
+  # observeEvent(input$PlotButton, {
+  #   withProgress(message = "Generating Plots...",
+  #                value = 0,
+  #                expr = {
+  #                  if (exists("id1")) {
+  #                    removeNotification(id1)
+  #                  }
+  #                  
+  #                  if (input$dataset == "Neurons only") {
+  #                    all <- allNeurons
+  #                  }
+  #                  if (input$dataset == "All cell types") {
+  #                    all <- allCells
+  #                  }
+  #                  Idents(object = all) <- "Neuron.type"
+  #                  ranges <- reactiveValues(x = NULL, y = NULL)
+  #                  observeEvent(input$plotPermanent_dblclick, {
+  #                    brush <- input$plotPermanent_brush
+  #                    if (!is.null(brush)) {
+  #                      ranges$x <- c(brush$xmin, brush$xmax)
+  #                      ranges$y <- c(brush$ymin, brush$ymax)
+  #                    } else {
+  #                      ranges$x <- NULL
+  #                      ranges$y <- NULL
+  #                    }
+  #                  })
+  #                  
+  #                  
+  #                  plots <- input$Plots
+  #                  if (plots == 'Metadata') {
+  #                    varToPlot <- input$featuresMetadata
+  #                    featuresInput <- function() {
+  #                      if (is.null(all)) {
+  #                        return(NULL)
+  #                      } else{
+  #                        withProgress(message = "Generating Features Plot...", value = 0, {
+  #                          DimPlot2(
+  #                            object = all,
+  #                            reduction = "umap",
+  #                            group.by = 'Neuron.type',
+  #                            label = TRUE,
+  #                            pt.size = 0.7,
+  #                            repel = TRUE,
+  #                            l1 = ranges$x,
+  #                            l2 = ranges$y
+  #                          ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                ylim = ranges$y,
+  #                                                                                expand = FALSE)
+  #                        })
+  #                      }
+  #                    }
+  #                    
+  #                    if (input$featuresMetadata == 'Neuron.type' &&
+  #                        input$dataset == "Neurons only") {
+  #                      Type <- input$Cluster
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn1 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Neuron.type",
+  #                              cells.highlight = names(all$Neuron.type[all$Neuron.type == Type]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7,
+  #                              l1 = ranges$x,
+  #                              l2 = ranges$y
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn1()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("NeuronType-", Type, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn1(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    if (input$featuresMetadata == 'Detection' &&
+  #                        input$dataset == "Neurons only") {
+  #                      Det <- input$Cluster3
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn3 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Detection" ,
+  #                              cells.highlight = names(all$Detection[all$Detection == Det]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn3()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("Detection-", Det, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn3(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    if (input$featuresMetadata == 'Experiment' &&
+  #                        input$dataset == "Neurons only") {
+  #                      Exp <- input$Cluster2
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn2 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Experiment",
+  #                              cells.highlight = names(all$Experiment[all$Experiment == Exp]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn2()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("Experiment-", Exp, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn2(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    if (input$featuresMetadata2 == 'Neuron.type' &&
+  #                        input$dataset == "All cell types") {
+  #                      Type <- input$Cluster.2
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn1 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Neuron.type",
+  #                              cells.highlight = names(all$Neuron.type[all$Neuron.type == Type]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7,
+  #                              l1 = ranges$x,
+  #                              l2 = ranges$y
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn1()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("NeuronType-", Type, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn1(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    if (input$featuresMetadata2 == 'Detection' &&
+  #                        input$dataset == "All cell types") {
+  #                      Det <- input$Cluster3.2
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn3 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Detection" ,
+  #                              cells.highlight = names(all$Detection[all$Detection == Det]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn3()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("Detection-", Det, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn3(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    if (input$featuresMetadata2 == 'Experiment' &&
+  #                        input$dataset == "All cell types") {
+  #                      Exp <- input$Cluster2.2
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn2 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Experiment",
+  #                              cells.highlight = names(all$Experiment[all$Experiment == Exp]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn2()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("Experiment-", Exp, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn2(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    if (input$featuresMetadata2 == 'Tissue.type' &&
+  #                        input$dataset == "All cell types") {
+  #                      output$SinglePlot <-
+  #                        renderPlot({
+  #                          featuresInput()
+  #                        }, height = 400, width = 600)
+  #                      fn4 <-
+  #                        function() {
+  #                          withProgress(message = "Generating Features Plot...", value = 0, {
+  #                            DimPlot2(
+  #                              object = all,
+  #                              reduction = "umap",
+  #                              group.by = "Tissue.type",
+  #                              cells.highlight = names(all$Tissue.type[all$Tissue.type == input$Cluster4]),
+  #                              cols.highlight = "red",
+  #                              pt.size = 0.7
+  #                            ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                                  ylim = ranges$y,
+  #                                                                                  expand = FALSE)
+  #                          })
+  #                        }
+  #                      output$High <-
+  #                        renderPlot({
+  #                          fn4()
+  #                        }, height = 400, width = 600, execOnResize = FALSE)
+  #                      output$downloadHigh <-
+  #                        downloadHandler(
+  #                          filename = function() {
+  #                            filename = paste("Tissue-", input$Cluster4, ".png", sep = "")
+  #                          },
+  #                          content = function(file) {
+  #                            ggsave(
+  #                              fn4(),
+  #                              file = file,
+  #                              height = 100,
+  #                              width = 150,
+  #                              units = "mm" ,
+  #                              limitsize = FALSE,
+  #                              device = "png"
+  #                            )
+  #                          }
+  #                        )
+  #                    }
+  #                    
+  #                    output$downloadClust <-
+  #                      downloadHandler(
+  #                        filename = function() {
+  #                          filename = paste("Clusters.png", sep = "")
+  #                        },
+  #                        content = function(file) {
+  #                          ggsave(
+  #                            featuresInput(),
+  #                            file = file,
+  #                            height = 200,
+  #                            width = 300,
+  #                            units = "mm" ,
+  #                            limitsize = FALSE,
+  #                            device = "png"
+  #                          )
+  #                        }
+  #                      )
+  #                  }
+  #                  
+  #                  ### Plot genes individual ----
+  #                  if (plots == 'Individual genes') {
+  #                    g <- input$GeneName
+  #                    print(g)
+  #                    
+  #                    if (g %in% gene_list$gene_name) {
+  #                      varToPlot <- filter(gene_list, gene_name == g)$gene_id
+  #                    }
+  #                    
+  #                    if (g %in% gene_list$gene_id) {
+  #                      varToPlot <- g
+  #                    }
+  #                    
+  #                    if (g %in% gene_list$seqnames) {
+  #                      varToPlot <- filter(gene_list, seqnames == g)$gene_id
+  #                    }
+  #                    
+  #                    output$geneUTR <-
+  #                      isolate(renderText({
+  #                        shiny::validate(need(
+  #                          !varToPlot %in% utr,
+  #                          message = paste0(
+  #                            "WARNING: ",
+  #                            g,
+  #                            " expression is unreliable as it has been overexpressed to generate transgenic strains."
+  #                          )
+  #                        ))
+  #                      }))
+  #                    
+  #                    
+  #                    f <- function() {
+  #                      DimPlot2(
+  #                        object = all,
+  #                        reduction = "umap",
+  #                        group.by = "Neuron.type",
+  #                        label = TRUE,
+  #                        repel = TRUE,
+  #                        l1 = ranges$x,
+  #                        l2 = ranges$y
+  #                      ) + theme(legend.position = "none") + coord_cartesian(xlim = ranges$x,
+  #                                                                            ylim = ranges$y,
+  #                                                                            expand = TRUE)
+  #                    }
+  #                    f2 <- function() {
+  #                      RidgePlot(
+  #                        object = all,
+  #                        features = as.character(varToPlot),
+  #                        ncol = 1,
+  #                        group.by = "Neuron.type",
+  #                        sort = "decreasing"
+  #                      ) + theme(
+  #                        legend.position = "none",
+  #                        panel.grid = element_blank(),
+  #                        panel.background = element_blank()
+  #                      )
+  #                    }
+  #                    f3 <-
+  #                      function() {
+  #                        FeaturePlot3(
+  #                          object = all,
+  #                          features = as.character(varToPlot),
+  #                          reduction = "umap",
+  #                          pt.size = 0.7,
+  #                          combine = TRUE,
+  #                          cols = c("beige", "darkred"),
+  #                          coord.fixed = FALSE,
+  #                          ranges = ranges
+  #                        )
+  #                      }
+  #                    
+  #                    output$SinglePlot2 <- renderPlot({
+  #                      shiny::validate(
+  #                        need(as.character(g) %in% gene_list$gene_name | as.character(g) %in% gene_list$gene_id | as.character(g) %in% gene_list$seqnames,  message = "Gene name is not present in this dataset or wrong name")
+  #                      )
+  #                      f()
+  #                    }, height = 400, width = 600, execOnResize = FALSE)
+  #                    output$FeaturePlot <-  renderPlot({
+  #                      shiny::validate(
+  #                        need(as.character(g) %in% gene_list$gene_name | as.character(g) %in% gene_list$gene_id | as.character(g) %in% gene_list$seqnames,  message = "Gene name is not present in this dataset or wrong name")
+  #                      )
+  #                      f3()
+  #                    }, height = 400, width = 600, execOnResize = FALSE)
+  #                    output$Violin <- renderPlot({
+  #                      shiny::validate(
+  #                        need(as.character(g) %in% gene_list$gene_name | as.character(g) %in% gene_list$gene_id | as.character(g) %in% gene_list$seqnames,  message = "Gene name is not present in this dataset or wrong name")
+  #                      )
+  #                      f2()
+  #                    }, height = 1300, width = 600)
+  #                    
+  #                    
+  #                    output$downloadExp <-
+  #                      downloadHandler(
+  #                        filename = function() {
+  #                          filename = paste("Dim-", varToPlot, ".png", sep = "")
+  #                        },
+  #                        content = function(file) {
+  #                          ggsave(
+  #                            f3(),
+  #                            file = file,
+  #                            height = 100,
+  #                            width = 150,
+  #                            units = "mm" ,
+  #                            limitsize = FALSE,
+  #                            device = "png"
+  #                          )
+  #                        }
+  #                      )
+  #                    output$downloadViolin <-
+  #                      downloadHandler(
+  #                        filename = function() {
+  #                          filename = paste("Violin-", varToPlot, ".png", sep = "")
+  #                        },
+  #                        content = function(file) {
+  #                          ggsave(
+  #                            f2(),
+  #                            file = file,
+  #                            height = 1300,
+  #                            width = 600,
+  #                            units = "mm" ,
+  #                            limitsize = FALSE,
+  #                            device = "png"
+  #                          )
+  #                        }
+  #                      )
+  #                  }
+  #                  
+  #                  ### Plot genes colocoalization ----
+  #                  
+  #                  if (plots == 'Colocalization') {
+  #                    g1 <- input$ColocalizationGenes1
+  #                    g2 <- input$ColocalizationGenes2
+  #                    #gene1 <- filter(gene_list, gene_name == g1)$gene_id
+  #                    #gene2 <- filter(gene_list, gene_name == g2)$gene_id
+  #                    
+  #                    if (g1 %in% gene_list$gene_name) {
+  #                      varToPlot1 <- filter(gene_list, gene_name == g1)$gene_id
+  #                    }
+  #                    
+  #                    if (g1 %in% gene_list$gene_id) {
+  #                      varToPlot1 <- g1
+  #                    }
+  #                    
+  #                    if (g1 %in% gene_list$seqnames) {
+  #                      varToPlot1 <- filter(gene_list, seqnames == g1)$gene_id
+  #                    }
+  #                    
+  #                    if (g2 %in% gene_list$gene_name) {
+  #                      varToPlot2 <- filter(gene_list, gene_name == g2)$gene_id
+  #                    }
+  #                    
+  #                    if (g2 %in% gene_list$gene_id) {
+  #                      varToPlot2 <- g2
+  #                    }
+  #                    
+  #                    if (g2 %in% gene_list$seqnames) {
+  #                      varToPlot2 <- filter(gene_list, seqnames == g2)$gene_id
+  #                    }
+  #                    
+  #                    
+  #                    featuresInput <- function() {
+  #                      if (is.null(all)) {
+  #                        return(NULL)
+  #                      } else{
+  #                        varBlend <- input$blend
+  #                        withProgress(message = "Generating Features Plot...", value =
+  #                                       0, {
+  #                                         FeaturePlot2(
+  #                                           object = all,
+  #                                           features = c(
+  #                                             #as.character(filter(gene_list, gene_name == g1)$gene_id),
+  #                                             #as.character(filter(gene_list, gene_name == g2)$gene_id)
+  #                                             varToPlot1, varToPlot2
+  #                                           ),
+  #                                           reduction = "umap",
+  #                                           pt.size = 0.7,
+  #                                           combine = TRUE,
+  #                                           cols = c("beige", "darkred"),
+  #                                           blend = TRUE,
+  #                                           blend.threshold = varBlend,
+  #                                           coord.fixed = TRUE,
+  #                                           ranges = ranges
+  #                                         )
+  #                                       })
+  #                      }
+  #                    }
+  #                    
+  #                    output$SinglePlotDouble <- isolate(renderPlot({
+  #                      shiny::validate(
+  #                        need(as.character(g1) %in% gene_list$gene_name | as.character(g1) %in% gene_list$gene_id | as.character(g1) %in% gene_list$seqnames,  message = "Gene name 1 is not present in this dataset or wrong name")
+  #                      )
+  #                      shiny::validate(
+  #                        need(as.character(g2) %in% gene_list$gene_name | as.character(g2) %in% gene_list$gene_id | as.character(g2) %in% gene_list$seqnames,  message = "Gene name 2 is not present in this dataset or wrong name")
+  #                      )
+  #                      featuresInput()
+  #                    }, height = 400, width = 1000))
+  #                    output$gene1utr <-
+  #                      renderText({
+  #                        shiny::validate(need(
+  #                          !varToPlot1 %in% utr ,
+  #                          message = paste0(
+  #                            "WARNING: ",
+  #                            g1,
+  #                            " expression is unreliable as it has been overexpressed to generate transgenic strains."
+  #                          )
+  #                        ))
+  #                      })
+  #                    output$gene2utr <-
+  #                      renderText({
+  #                        shiny::validate(need(
+  #                          !varToPlot2 %in% utr ,
+  #                          message = paste0(
+  #                            "WARNING: ",
+  #                            g2,
+  #                            " expression is unreliable as it has been overexpressed to generate transgenic strains."
+  #                          )
+  #                        ))
+  #                      })
+  #                    output$downloadCol <-
+  #                      downloadHandler(
+  #                        filename = function() {
+  #                          filename = paste("Colocalization-", g1, "_", g2, ".png", sep = "")
+  #                        },
+  #                        content = function(file) {
+  #                          ggsave(
+  #                            featuresInput(),
+  #                            file = file,
+  #                            height = 200,
+  #                            width = 500,
+  #                            units = "mm" ,
+  #                            limitsize = FALSE,
+  #                            device = "png"
+  #                          )
+  #                        }
+  #                      )
+  #                    output$SinglePlotPermanent <-
+  #                      renderPlot(
+  #                        DimPlot2(
+  #                          object = all,
+  #                          reduction = "umap",
+  #                          group.by = "Neuron.type",
+  #                          label = TRUE,
+  #                          repel = TRUE,
+  #                          l1 = ranges$x,
+  #                          l2 = ranges$y
+  #                        ) + theme(legend.position = "none") + coord_cartesian(
+  #                          xlim = ranges$x,
+  #                          ylim = ranges$y,
+  #                          expand = FALSE
+  #                        ),
+  #                        height = 400,
+  #                        width = 600,
+  #                        execOnResize = FALSE
+  #                      )
+  #                    
+  #                  }
+  #                })
+  #   
+  # })
   
   ### Tables of markers ----
   markers$p_val <-
@@ -828,63 +828,52 @@ server <- function(input, output) {
   # }, ignoreNULL = TRUE)
   
   observeEvent(input$DEXButton, {
-    print(input$batch1)
-    print(input$batch2)
-    Idents(object = allCells) <- "Neuron.type"
+    cat("Testing DE of ", input$batch1, " vs ",input$batch2, "\n")
     b1 <- unlist(strsplit(input$batch1, split = ","))
     b1 <- gsub(" ", "", as.character(b1))
     b2 <- unlist(strsplit(input$batch2, split = ","))
     b2 <- gsub(" ", "", as.character(b2))
     
-    if (mean(c(b1, b2) %in% allCells$Neuron.type) == 1 | b2 == "ALL" | b2 == "NEURONS") {
+    if (mean(c(b1, b2) %in% all_cell_types) == 1 || b2 == "ALL" || b2 == "NEURONS") {
       output$text2 <- renderText({
         ""
       })
-      
-      if (!b2 %in% c("ALL", "NEURONS")){
+      if (!any(b2 %in% c("ALL", "NEURONS"))){
       
         tableDEX <-
-          FindMarkers(
-            allCells,
-            #ident.1 = unlist(strsplit(input$batch1, split = ",| ")),
-            #ident.2 = unlist(strsplit(input$batch2, split = ",| ")),
+          perform_de(
+            allCells.data, allCells.metadata,
             ident.1 = b1,
-            ident.2 = b2,
-            test.use = input$test
+            ident.2 = b2
           )
         tableDEX$gene <- rownames(tableDEX)
       
       }
-      
-      if (b2 == "ALL"){
+      if (any(b2 == "ALL")){
         print(b2)
          tableDEX <-
-          FindMarkers(
-            allCells,
-            #ident.1 = unlist(strsplit(input$batch1, split = ",| ")),
-            ident.1 = b1,
-            test.use = input$test
+           perform_de(
+             allCells.data, allCells.metadata,
+            ident.1 = b1
           )
         
          tableDEX$gene <- rownames(tableDEX)
       }
-      
-      if (b2 == "NEURONS"){
-        print(b2)
+      if (any(b2 == "NEURONS")){
+        print("Testing against all neurons.")
         tableDEX <-
-          FindMarkers(
-            allCells,
-            #ident.1 = unlist(strsplit(input$batch1, split = ",| ")),
+          perform_de(
+            allCells.data, allCells.metadata,
             ident.1 = b1,
-            ident.2 = filter(allCells@meta.data, !Neuron.type %in% b1, Tissue.type == "Neuron")$Neuron.type %>% unique,
-            test.use = input$test
+            ident.2 = filter(allCells.metadata,
+                             !Neuron.type %in% b1,
+                             Tissue.type == "Neuron")$Neuron.type %>% unique
           )
         
         tableDEX$gene <- rownames(tableDEX)
       }
       
-      
-        tableDEX <-
+      tableDEX <-
         merge(
           tableDEX,
           gene_list,
