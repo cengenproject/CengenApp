@@ -344,7 +344,7 @@ ui <- fluidPage(
               selectInput(
                 inputId = "test",
                 label = "Select statistical test",
-                choices = c("wilcox")
+                choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test")
               ),
               textInput(
                 inputId = "topM2",
@@ -367,8 +367,7 @@ ui <- fluidPage(
           ),
           br(),
           
-          DT::dataTableOutput("MarkTable_ClusterCells"),
-          span(textOutput("text2"), style =
+          span(textOutput("text_error_dex"), style =
                  "color:red"),
           br(),
           DT::dataTableOutput("MarkTable_Batch"),
