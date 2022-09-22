@@ -1168,7 +1168,15 @@ observeEvent(input$PlotHeatmap, {
   #ss <- gsub(" ", "", as.character(ss))
   ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")
   ss <- as.data.frame(ss)[,1]
-  ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
+  star <- grep("\\*", ss)
+  
+  families <- c()
+  for(i in star){ 
+    families <- c(families, grep( gsub("\\*", "", ss[i]), gene_list$gene_name, value = TRUE) )
+  }
+  
+  
+  ss <- unique(c(families, ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
  
   mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
   mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]

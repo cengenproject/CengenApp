@@ -572,7 +572,7 @@ ui <- fluidPage(
           textAreaInput(
             inputId = "genelist",
             label = "Introduce a list of genes",
-            value = "flp-1\nflp-2,flp-3,WBGene00001447\nWBGene00001448\nflp-6\nflp-7\nflp-8\nflp-9\nflp-10\nflp-11\nflp-12\nflp-13\nflp-14\nflp-15\nflp-16\nflp-17\nflp-18\nflp-19\nflp-20\nflp-21\nflp-22\nflp-23\nflp-24\nflp-25\nflp-26\nflp-27\nflp-28\nflp-32\nflp-33\nflp-34",
+            value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
             width = "500px",
             height = "100px"
           ),
