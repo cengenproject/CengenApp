@@ -360,16 +360,7 @@ ui <- fluidPage(
           )
         ),
         br(),
-        h6("HEADER LEGEND:"),
-        h6(
-          "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
-        ),
-        h6(
-          "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
-        ),
-        h6(
-          "avg_logFC: Log of the expression fold change between group 1 and group 2."
-        ),
+        htmlOutput("legend_de_columns", container = h6),
         br(),
         
         span(textOutput("text_error_dex"), style =

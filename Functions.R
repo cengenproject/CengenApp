@@ -79,11 +79,10 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   expr.1 <- allCells.data[,cells.1]
   expr.2 <- allCells.data[,cells.2]
   
-  features <- rownames(allCells.data)
-  
+  # get fold changes
   fc.results <- FoldChange(cells.1 = which(cells.1),
                            cells.2 = which(cells.2),
-                           features = features)
+                           features = rownames(allCells.data))
   
   # filter features
   alpha.min <- pmax(fc.results$pct.1, fc.results$pct.2)
@@ -94,7 +93,6 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
     warning("No features pass min threshold; returning empty data.frame")
   }
   
-  
   features.diff <- rownames(fc.results)[abs(fc.results[["avg_log2FC"]]) >= logfc.threshold]
   
   features <- intersect(features, features.diff)
@@ -103,9 +101,9 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   }
   
   
+  # Wilcoxon test
   data.use <- allCells.data[features, c(which(cells.1), which(cells.2)), drop = FALSE]
   j <- seq_len(sum(cells.1))
-  
   
   p_val <- sapply(X = seq_along(features),
                   FUN = function(x) {
@@ -113,17 +111,15 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
                                                                   statistics = data.use[x, ])), 1)
                   })
   
-  de.results <- cbind(data.frame(gene = features,
-                                 p_val = p_val),
-                      fc.results[features, , drop = FALSE])
-  de.results$p_val_adj = p.adjust(p = de.results$p_val, 
-                                  method = "bonferroni", n = nrow(allCells.data))
-  rownames(de.results) <- NULL
   
-  de.results$avg_log2FC <-
-    as.numeric(formatC(de.results$avg_log2FC, digits = 3) %>% gsub(" ", "", .))
-  
-  de.results
+  p_val_adj = p.adjust(p_val, method = "bonferroni", n = nrow(allCells.data))
+ 
+  data.frame(gene = features,
+             pct.1 = fc.results$pct.1[features],
+             pct.2 = fc.results$pct.2[features],
+             avg_logFC = fc.results$avg_log2FC[features],
+             p_val = p_val,
+             p_val_adj = p_val_adj)
 }
 
 

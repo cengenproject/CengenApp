@@ -404,7 +404,33 @@ server <- function(input, output) {
     } else{
       
       output$text_error_dex <- renderText({""})
-      
+      output$legend_de_columns <- renderText({
+        if(input$test == "Wilcoxon on single cells"){
+          c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test. This test may display inflated power, as it considers each cell as an individual replicate.
+          Before testing, the genes are filtered to only consider those displaying enough expression in one of the groups, 
+          and a large enough fold change between groups.",
+          "Columns:",
+          "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
+          "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
+          "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
+        } else if(input$test == "Pseudobulk: Wilcoxon"){
+          "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
+        Only genes which displayed high enough expression in enough cell types are considered.<br/>
+        Columns:<br/>
+        mean_1 and mean_2: mean expression across samples for group 1 and 2.<br/>
+        log2FC: change in mean expression between group 1 and 2 (log fold change).<br/>
+        p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+        } else if(input$test == "Pseudobulk: edgeR pairwise exact test"){
+          "Testing differential expression between cell types across samples (pseudobulk), using edgeR's exact test.
+        Only genes which displayed high enough expression in enough cell types are considered.
+        Note that the exact test only allows pairwise comparisons.
+        edgeR implements other tests (based on glm) which allow more complex comparisons but are impractical to run on a website.<br/>
+        Columns:<br/>
+        logFC: change in mean expression between group 1 and 2 (log fold change).<br/>
+        logCPM: mean expression of the gene across all groups (log of Count Per Million reads)<br/>
+        p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+        }
+      }, sep = "<br>")
       
       if (!any(b2 %in% c("ALL", "NEURONS"))){
         tableDEX <-
