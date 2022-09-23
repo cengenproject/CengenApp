@@ -115,9 +115,9 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   p_val_adj = p.adjust(p_val, method = "bonferroni", n = nrow(allCells.data))
  
   data.frame(gene = features,
-             pct.1 = fc.results$pct.1[features],
-             pct.2 = fc.results$pct.2[features],
-             avg_logFC = fc.results$avg_log2FC[features],
+             pct.1 = fc.results[features,]$pct.1,
+             pct.2 = fc.results[features,]$pct.2,
+             avg_logFC = fc.results[features,]$avg_log2FC,
              p_val = p_val,
              p_val_adj = p_val_adj)
 }
