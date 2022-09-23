@@ -2,54 +2,8 @@
 #### Report bugs to: gabrielsantperebaro@gmail.com
 
 
-library(BiocManager)
-require(shiny)
-library(shinyjs)
-library(shinythemes)
-library(ggridges)
-library(DT)
-library(cowplot)
-require(dplyr)
-require(Seurat)
-library(ggplot2)
-library(tidyverse)
-library(pheatmap)
-library(expss)
-library(plotly)
-library(xlsx)
-library(edgeR)
-library(qs)
-#library(cairo)
-#library(MAST)
-options(repos = BiocManager::repositories())
-#setwd("/Users/gabrielsantpere/Dropbox/Scripts/RshinyDeveloping_April2020")
-#source("Functions.R")
-
-utr <-
-  c(
-    "WBGene00023498",
-    "WBGene00023497",
-    "WBGene00004397",
-    "WBGene00006843",
-    "WBGene00004010",
-    "WBGene00006789",
-    "WBGene00001135",
-    "WBGene00001079",
-    "WBGene00001135",
-    "WBGene00006783",
-    "WBGene00000501",
-    "WBGene00006788",
-    "WBGene00001555",
-    "WBGene00206533",
-    "WBGene00011964",
-    "WBGene00018172",
-    "WBGene00016259",
-    "WBGene00023407"
-  )
 
 server <- function(input, output) {
-  
-  
   
   ### Gene expression by cell type Panel ----
   
@@ -111,7 +65,7 @@ server <- function(input, output) {
               )
             },
             content = function(file) {
-              write.csv(t4d , file, dec = ".", sep = "\t")
+              write.table(t4d , file, dec = ".", sep = "\t")
             }
           )
         
@@ -218,7 +172,7 @@ server <- function(input, output) {
             )
           },
           content = function(file) {
-            write.csv(t3, file, dec = ".", sep = "\t")
+            write.table(t3, file, dec = ".", sep = "\t")
           }
         )
     })
@@ -349,7 +303,7 @@ server <- function(input, output) {
           )
         },
         content = function(file) {
-          write.csv(rbind(tt1, tt2), file, sep = "\t")
+          write.table(rbind(tt1, tt2), file, sep = "\t")
         }
       )
     
@@ -384,7 +338,7 @@ server <- function(input, output) {
           paste("CellMarkers_NeuronsOnly-", input$Markers, ".csv", sep = "")
         },
         content = function(file) {
-          write.csv(t1, file, sep = "\t")
+          write.table(t1, file, sep = "\t")
         }
       )
   })
@@ -408,7 +362,7 @@ server <- function(input, output) {
           paste("CellMarkers_AllCells-", input$Markers2, ".csv", sep = "")
         },
         content = function(file) {
-          write.csv(t2, file, sep = "\t")
+          write.table(t2, file, sep = "\t")
         }
       )
   })
@@ -507,7 +461,7 @@ server <- function(input, output) {
               )
             },
             content = function(file) {
-              write.csv(tableDEX, file, sep = "\t")
+              write.table(tableDEX, file, sep = "\t")
             }
           )
       } else {

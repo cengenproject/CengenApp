@@ -8,21 +8,21 @@ library(shinythemes)
 library(ggridges)
 library(DT)
 library(cowplot)
-require(dplyr)
-require(Seurat)
-library(ggplot2)
 library(shinybusy)
 library(tidyverse)
 library(pheatmap)
 library(expss)
 library(plotly)
-#library(cairo)
-#library(MAST)
+library(xlsx)
+library(edgeR)
+library(qs)
+library(Matrix)
+library(limma)
+
 options(repos = BiocManager::repositories())
 options("repos")
 options(shiny.maxRequestSize = 400 * 1024 ^ 2)
 source("Functions.R")
-
 
 
 options(scipen = 0)
@@ -51,6 +51,7 @@ utr <-
   )
 
 msg <- filter(gene_list, gene_id %in% utr)$gene_name %>% paste(., collapse = ", ")
+
 
 ## UI ----
 ui <- fluidPage(

@@ -36,52 +36,35 @@ utr <- c("WBGene00023498","WBGene00023497","WBGene00004397","WBGene00006843",
 
 # Perform DE ----
 
-# Dispatch
-perform_de <- function(ident.1, ident.2, method, ...){
-
-  cat("DE of ", ident.1," vs ",ident.2,"\n")
-  # dispatch to proper test
-  if(method == "Wilcoxon on single cells"){
-    print("sc Wilcoxon")
-    tableDEX <- perform_de_sc(ident.1 , ident.2, ...)
-  } else if(method == "Pseudobulk: Wilcoxon"){
-    print("sc Wilcoxon")
-    tableDEX <- perform_de_pb_wilcoxon(ident.1 , ident.2, ...)
-  } else if(method == "Pseudobulk: edgeR pairwise exact test"){
-    print("sc Wilcoxon")
-    tableDEX <- perform_de_pb_edger(ident.1 , ident.2, ...)
-  } else{
-    print("Test not recognized: ", method)
-    stop("Test not recognized: ", method)
-  }
-  
-  # finish
-  
-  tableDEX <-
-    merge(
-      tableDEX,
-      gene_list,
-      by.x = "gene",
-      by.y = "gene_id",
-      all.x = TRUE
-    ) |>
-    dplyr::arrange(p_val_adj)
-  
-  tableDEX$p_val <-
-    as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
-  tableDEX$p_val_adj <-
-    as.numeric(formatC(
-      tableDEX$p_val_adj,
-      format = "e",
-      digits = 3
-    ) %>% gsub(" ", "", .))
-  
-  tableDEX
-}
 
 #~ single cell Wilcoxon ----
-# note this is a rewrite of Seurat::FindMarkers that does only the minimum required here,
+
+# note these are rewrites of Seurat::FindMarkers and Seurat::FoldChange that do
+# only the minimum required here, working directly with the content of
+# the Seurat object (not a full Seurat object)
+
+mean.fxn <- function(x) {
+  return(log(x = rowMeans(x = expm1(x = x)) + 1, 
+             base = 2))
+}
+
+# note this is a rewrite of Seurat::FoldChange that does only the minimum required here,
 # and works directly with the content of the Seurat object( not a full Seurat object)
+FoldChange <- function (cells.1, cells.2, features) {
+  thresh.min <- 0
+  pct.1 <- round(x = rowSums(x = allCells.data[features, cells.1, 
+                                        drop = FALSE] > thresh.min)/length(x = cells.1), digits = 3)
+  pct.2 <- round(x = rowSums(x = allCells.data[features, cells.2, 
+                                        drop = FALSE] > thresh.min)/length(x = cells.2), digits = 3)
+  data.1 <- mean.fxn(allCells.data[features, cells.1, drop = FALSE])
+  data.2 <- mean.fxn(allCells.data[features, cells.2, drop = FALSE])
+  fc <- (data.1 - data.2)
+  fc.results <- as.data.frame(x = cbind(fc, pct.1, pct.2))
+  colnames(fc.results) <- c("avg_log2FC", "pct.1", "pct.2")
+  return(fc.results)
+}
+
+
 perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf, logfc.threshold = 0.25){
   
   load_as_needed("allCells.data")
@@ -101,15 +84,9 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   
   features <- rownames(allCells.data)
   
-  fc.results <- FoldChange(object = allCells.data,
-                           slot = "data", 
-                           cells.1 = which(cells.1), cells.2 = which(cells.2),
-                           features = features,
-                           mean.fxn = function(x) {
-                             return(log(x = rowMeans(x = expm1(x = x)) + 1, 
-                                        base = 2))
-                           }, fc.name = "avg_log2FC",
-                           pseudocount.use = 1, base = 2)
+  fc.results <- FoldChange(cells.1 = which(cells.1),
+                           cells.2 = which(cells.2),
+                           features = features)
   
   # filter features
   alpha.min <- pmax(fc.results$pct.1, fc.results$pct.2)
@@ -194,8 +171,53 @@ perform_de_pb_edger <- function(ident.1, ident.2, ...){
 }
 
 
+
+
+# Dispatch
+perform_de <- function(ident.1, ident.2, method, ...){
+  
+  cat("DE of ", ident.1," vs ",ident.2,"\n")
+  # dispatch to proper test
+  if(method == "Wilcoxon on single cells"){
+    print("sc Wilcoxon")
+    tableDEX <- perform_de_sc(ident.1 , ident.2, ...)
+  } else if(method == "Pseudobulk: Wilcoxon"){
+    print("sc Wilcoxon")
+    tableDEX <- perform_de_pb_wilcoxon(ident.1 , ident.2, ...)
+  } else if(method == "Pseudobulk: edgeR pairwise exact test"){
+    print("sc Wilcoxon")
+    tableDEX <- perform_de_pb_edger(ident.1 , ident.2, ...)
+  } else{
+    print("Test not recognized: ", method)
+    stop("Test not recognized: ", method)
+  }
+  
+  # finish
+  
+  tableDEX <-
+    merge(
+      tableDEX,
+      gene_list,
+      by.x = "gene",
+      by.y = "gene_id",
+      all.x = TRUE
+    ) |>
+    dplyr::arrange(p_val_adj)
+  
+  tableDEX$p_val <-
+    as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
+  tableDEX$p_val_adj <-
+    as.numeric(formatC(
+      tableDEX$p_val_adj,
+      format = "e",
+      digits = 3
+    ) %>% gsub(" ", "", .))
+  
+  tableDEX
+}
+
 # # Tests
-# res3 <- perform_de("sc_wilcoxon","AVL", "AWC_OFF")
+# res3 <- perform_de("AVL", "AWC_OFF", "Wilcoxon on single cells")
 # res2 <- perform_de("pb_wilcoxon","AVL", "AWC_OFF")
 # res1 <- perform_de("pb_edger","AVL", "AWC_OFF")
 # 
