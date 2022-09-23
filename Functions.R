@@ -138,6 +138,12 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
   
   data.use <- pseudobulk_matrix[, c(cols.group.1,cols.group.2)]
   
+  # Get fold change
+  mean_1 <- rowMeans(pseudobulk_matrix[, cols.group.1])
+  mean_2 <- rowMeans(pseudobulk_matrix[, cols.group.2])
+  log2FC <- log2(mean_1 + 1) - log2(mean_2 + 1)
+  
+  
   p_val <- sapply(X = seq_len(nrow(data.use)),
                   FUN = function(x) {
                     min(2 * min(limma::rankSumTestWithCorrelation(index = seq_along(cols.group.1), 
@@ -146,6 +152,9 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
   
   p_val_adj <- p.adjust(p_val, method = "bonferroni")
   data.frame(gene = rownames(pseudobulk_matrix),
+             mean_1 = mean_1,
+             mean_2 = mean_2,
+             log2FC = log2FC,
              p_val = p_val,
              p_val_adj = p_val_adj)
 }
@@ -179,10 +188,10 @@ perform_de <- function(ident.1, ident.2, method, ...){
     print("sc Wilcoxon")
     tableDEX <- perform_de_sc(ident.1 , ident.2, ...)
   } else if(method == "Pseudobulk: Wilcoxon"){
-    print("sc Wilcoxon")
+    print("pb Wilcoxon")
     tableDEX <- perform_de_pb_wilcoxon(ident.1 , ident.2, ...)
   } else if(method == "Pseudobulk: edgeR pairwise exact test"){
-    print("sc Wilcoxon")
+    print("pb edgeR")
     tableDEX <- perform_de_pb_edger(ident.1 , ident.2, ...)
   } else{
     print("Test not recognized: ", method)
@@ -199,24 +208,22 @@ perform_de <- function(ident.1, ident.2, method, ...){
       by.y = "gene_id",
       all.x = TRUE
     ) |>
-    dplyr::arrange(p_val_adj)
+    dplyr::arrange(p_val_adj) |>
+    mutate(across(starts_with("p_val"),
+                  ~ signif(.x, 2)),
+           across(contains("log"),
+                  ~ round(.x, 1)),
+           across(contains("mean"),
+                  ~ round(.x, 1)))
   
-  tableDEX$p_val <-
-    as.numeric(formatC(tableDEX$p_val, format = "e", digits = 3) %>% gsub(" ", "", .))
-  tableDEX$p_val_adj <-
-    as.numeric(formatC(
-      tableDEX$p_val_adj,
-      format = "e",
-      digits = 3
-    ) %>% gsub(" ", "", .))
   
   tableDEX
 }
 
 # # Tests
 # res3 <- perform_de("AVL", "AWC_OFF", "Wilcoxon on single cells")
-# res2 <- perform_de("pb_wilcoxon","AVL", "AWC_OFF")
-# res1 <- perform_de("pb_edger","AVL", "AWC_OFF")
+# res2 <- perform_de("AVL", "AWC_OFF", "Pseudobulk: Wilcoxon")
+# res1 <- perform_de("AVL", "AWC_OFF", "Pseudobulk: edgeR pairwise exact test")
 # 
 # head(res1)
 # head(res2)
