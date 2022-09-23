@@ -1,27 +1,30 @@
 #### CenGenAPP 2018-2020
 #### Report bugs to: gabrielsantperebaro@gmail.com
 
-library(BiocManager)
 require(shiny)
 library(shinyjs)
 library(shinythemes)
-library(ggridges)
+
 library(DT)
-library(cowplot)
-library(shinybusy)
 library(tidyverse)
 library(pheatmap)
-library(expss)
+
+library(ggridges)
+library(cowplot)
+library(shinybusy)
 library(plotly)
+
+library(expss)
 library(xlsx)
+
 library(edgeR)
 library(qs)
 library(Matrix)
 library(limma)
 
 options(repos = BiocManager::repositories())
-options("repos")
 options(shiny.maxRequestSize = 400 * 1024 ^ 2)
+
 source("Functions.R")
 
 
