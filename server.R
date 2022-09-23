@@ -421,18 +421,20 @@ server <- function(input, output) {
         tableDEX <-
           perform_de(
             ident.1 = b1,
+            ident.2 = all_cell_types |> setdiff(b1),
             method = input$test
           )
       }
       
       if (any(b2 == "NEURONS")){
         print("Testing against all neurons.")
+        
+        load_as_needed("allCells.metadata")
+        
         tableDEX <-
           perform_de(
             ident.1 = b1,
-            ident.2 = filter(allCells.metadata,
-                             !Neuron.type %in% b1,
-                             Tissue.type == "Neuron")$Neuron.type %>% unique,
+            ident.2 = all_neuron_types |> setdiff(b1), #does NOT contain "_stressed" neurons
             method = input$test
           )
       }

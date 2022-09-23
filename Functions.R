@@ -72,11 +72,8 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   
   cells.1 <- allCells.metadata$Neuron.type %in% ident.1
   
-  if(!is.null(ident.2)){
-    cells.2 <- allCells.metadata$Neuron.type %in% ident.2
-  } else{
-    cells.2 <- !( allCells.metadata$Neuron.type %in% ident.1 )
-  }
+  cells.2 <- allCells.metadata$Neuron.type %in% ident.2
+  
   
   
   expr.1 <- allCells.data[,cells.1]
@@ -173,7 +170,7 @@ perform_de_pb_edger <- function(ident.1, ident.2, ...){
 
 
 
-# Dispatch
+#~ Dispatch ----
 perform_de <- function(ident.1, ident.2, method, ...){
   
   cat("DE of ", ident.1," vs ",ident.2,"\n")
