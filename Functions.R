@@ -4,12 +4,32 @@
 #options(repos = BiocManager::repositories())
 #options("repos")
 
-load("Dataset_6July_2021_noSeurat2.rda")
+
+
+# Loading data ----
+
+# note the assignment in the global environment
+load_as_needed <- function(dataset){
+  if(!exists(dataset)){
+    assign(dataset,
+           qs::qread(paste0("data/", dataset, ".qs")),
+           envir = .GlobalEnv)
+  }
+}
+
+# load("Dataset_6July_2021_noSeurat2.rda")
+
+# load global data
+load_as_needed("gene_list")
+load_as_needed("all_cell_types")
+load_as_needed("all_neuron_types")
+
 
 utr <- c("WBGene00023498","WBGene00023497","WBGene00004397","WBGene00006843",
          "WBGene00004010","WBGene00006789","WBGene00001135","WBGene00001079",
          "WBGene00001135","WBGene00006783","WBGene00000501","WBGene00006788",
          "WBGene00001555")
+
 
 
 
@@ -63,6 +83,10 @@ perform_de <- function(ident.1, ident.2, method, ...){
 # note this is a rewrite of Seurat::FindMarkers that does only the minimum required here,
 # and works directly with the content of the Seurat object( not a full Seurat object)
 perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf, logfc.threshold = 0.25){
+  
+  load_as_needed("allCells.data")
+  load_as_needed("allCells.metadata")
+  
   cells.1 <- allCells.metadata$Neuron.type %in% ident.1
   
   if(!is.null(ident.2)){
@@ -133,6 +157,8 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
 #~ pseudobulk Wilcoxon ----
 perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
   
+  load_as_needed("pseudobulk_matrix")
+  
   cols.group.1 <- which(startsWith(colnames(pseudobulk_matrix[,]), ident.1))
   cols.group.2 <- which(startsWith(colnames(pseudobulk_matrix[,]), ident.2))
   
@@ -154,6 +180,8 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
 
 #~ pseudobulk edgeR ----
 perform_de_pb_edger <- function(ident.1, ident.2, ...){
+  
+  load_as_needed("edger_precomputed")
   
   et <- exactTest(edger_precomputed, pair = c(ident.1, ident.2))
   

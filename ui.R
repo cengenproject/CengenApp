@@ -100,7 +100,7 @@ ui <- fluidPage(
             selectInput(
               inputId = "Tcell_name",
               label = "Select cell type",
-              choices = colnames(L4.all.TPM.raw_th)[1:169],
+              choices = all_cell_types,
               selected = "ADA"
             ),
             selectInput(
@@ -259,7 +259,7 @@ ui <- fluidPage(
           selectInput(
             inputId = "Markers",
             label = "Select cluster",
-            choices = colnames(L4.TPM.medium),
+            choices = all_neuron_types,
             selected = "SIA"
           ),
           textInput(

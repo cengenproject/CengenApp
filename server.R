@@ -18,6 +18,7 @@ library(expss)
 library(plotly)
 library(xlsx)
 library(edgeR)
+library(qs)
 #library(cairo)
 #library(MAST)
 options(repos = BiocManager::repositories())
@@ -47,12 +48,17 @@ utr <-
   )
 
 server <- function(input, output) {
- 
+  
+  
   
   ### Gene expression by cell type Panel ----
   
   observeEvent(input$TCell, {
     withProgress(message = "Obtaining information...", value = 0, {
+      
+      load_as_needed("L4.all.TPM.raw_th")
+      load_as_needed("ths")
+      
       
       if( input$Tcell_cut == "All Cells Unfiltered" ) { th = L4.all.TPM.raw_th } else { th = ths }
       
@@ -115,6 +121,9 @@ server <- function(input, output) {
   })
   
   observeEvent(input$TGene, {
+    
+    load_as_needed("L4.all.TPM.raw_th")
+    load_as_needed("ths")
     
     g <- input$Tgene_name
     print(g)
@@ -217,6 +226,9 @@ server <- function(input, output) {
   
   observeEvent( list(input$Tgene_name_batch, input$Tgene_cut_batch) , {
     
+    load_as_needed("L4.all.TPM.raw_th")
+    load_as_needed("ths")
+    
     gns1 <- strsplit(as.character(input$Tgene_name_batch), "\n| |\\,|\t")
     gns1 <- as.data.frame(gns1)[,1]
     gns <- unique(c(gns1, filter(gene_list, gene_id %in% gns1 | seqnames %in% gns1)$gene_name))
@@ -265,9 +277,14 @@ server <- function(input, output) {
     }
   })
   
+  
+  
   ### Find markers based on percentage of expression Panel ----
   
   observeEvent(input$Filter, {
+    
+    load_as_needed("pcttable")
+    
     s1 <- unlist(strsplit(as.character(input$String1), split = ","))
     s1 <- gsub(" ", "", as.character(s1))
     s2 <- unlist(strsplit(as.character(input$String2), split = ","))
@@ -340,35 +357,27 @@ server <- function(input, output) {
   
   
   ### Enriched Genes by cell type Panel ----
-  markers$p_val <-
-    formatC(markers$p_val, format = "e", digits = 3) %>% gsub(" ", "", .)
-  markers$p_val_adj <-
-    formatC(markers$p_val_adj, format = "e", digits = 3) %>% gsub(" ", "", .)
-  markers$avg_log2FC <-
-    formatC(markers$avg_log2FC, digits = 3) %>% gsub(" ", "", .)
-  markersAllcells$p_val <-
-    formatC(markersAllcells$p_val,
-            format = "e",
-            digits = 3) %>% gsub(" ", "", .)
-  markersAllcells$p_val_adj <-
-    formatC(markersAllcells$p_val_adj,
-            format = "e",
-            digits = 3) %>% gsub(" ", "", .)
-  markersAllcells$avg_log2FC <-
-    formatC(markersAllcells$avg_log2FC, digits = 3) %>% gsub(" ", "", .)
   
   observeEvent(input$Markers, {
+    
+    load_as_needed("markers")
+    
     print(input$top2)
     output$MarkTable <- DT::renderDataTable({
       DT::datatable(
-        filter(markers, cluster == input$Markers, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC)) %>% head(as.numeric(input$top)) ,
+        filter(markers, cluster == input$Markers, avg_log2FC > 0) %>%
+          arrange(p_val_adj, desc(avg_log2FC)) %>%
+          head(as.numeric(input$top)) ,
         style = 'jQueryUI',
         class = 'cell-border stripe',
         rownames = FALSE
-      ) %>% formatStyle(c(1:8), color = "black")
+      ) %>%
+        formatStyle(c(1:8), color = "black")
     })
+    
     t1 <-
-      filter(markers, cluster == input$Markers, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC))
+      filter(markers, cluster == input$Markers, avg_log2FC > 0) %>%
+      arrange(p_val_adj, desc(avg_log2FC))
     output$downloadMarkers <-
       downloadHandler(
         filename = function() {
@@ -380,6 +389,9 @@ server <- function(input, output) {
       )
   })
   observeEvent(input$Markers2, {
+    
+    load_as_needed("markersAllcells")
+    
     output$MarkTable2 <- DT::renderDataTable({
       DT::datatable(
         filter(markersAllcells, cluster == input$Markers2, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC)) %>% head(as.numeric(input$top2)),
@@ -406,7 +418,6 @@ server <- function(input, output) {
   
   ### Find Differential Expression between Cell Types Panel ----
   observeEvent(input$DEXButton, {
-    
     
     cat("Testing DE of ", input$batch1, " vs ", input$batch2, "\n")
     
@@ -519,6 +530,10 @@ server <- function(input, output) {
   ### Heatmaps of gene expression Panel ----
   
   observeEvent(input$PlotHeatmap, {
+    
+    load_as_needed("med.scaled.long")
+    load_as_needed("L4.TPM.raw.scaled.long")
+    
     ds <- input$dataset_heatmap
     #ss <- unlist(strsplit(as.character(input$genelist), split = ","))
     #ss <- gsub(" ", "", as.character(ss))
@@ -526,19 +541,28 @@ server <- function(input, output) {
     ss <- as.data.frame(ss)[,1]
     ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
     
-    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
-    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) &
+                !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) &
+                    !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
     
     if(ds=="Neurons only"){
+      
+      load_as_needed("L4.TPM.medium")
+      
       L4.TPM=L4.TPM.medium
       heatmapdata=med.scaled.long
       cc = colnames(ths)[-c(1,130,131)]
-      missing = mis} else {
-        L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
-        heatmapdata=L4.TPM.raw.scaled.long
-        cc=colnames(L4.all.TPM.raw)
-        missing = mis_all
-      }
+      missing = mis
+    } else {
+      
+      load_as_needed("L4.all.TPM.raw")
+      
+      L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
+      heatmapdata=L4.TPM.raw.scaled.long
+      cc=colnames(L4.all.TPM.raw)
+      missing = mis_all
+    }
     
     head(heatmapdata)
     print(ds)
@@ -660,6 +684,10 @@ server <- function(input, output) {
   ### From file
   
   observeEvent(input$PlotHeatmap2, {
+    
+    load_as_needed("med.scaled.long")
+    load_as_needed("L4.TPM.raw.scaled.long")
+    
     ds <- input$dataset_heatmap
     inFile <- input$file1
     ss<-read.table(inFile$datapath, header=FALSE)$V1
@@ -668,10 +696,17 @@ server <- function(input, output) {
     ss <- as.data.frame(ss)[,1]
     ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
     
-    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
-    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) &
+                !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) &
+                    !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
     
     if(ds=="Neurons only"){
+      
+      load_as_needed("L4.TPM.medium")
+      load_as_needed("ths")
+      load_as_needed("L4.all.TPM.raw")
+      
       L4.TPM=L4.TPM.medium
       heatmapdata=med.scaled.long
       cc = colnames(ths)[-c(1,130,131)]
