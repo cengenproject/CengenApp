@@ -65,7 +65,7 @@ server <- function(input, output) {
               )
             },
             content = function(file) {
-              write.table(t4d , file, dec = ".", sep = "\t")
+              write.csv(t4d , file, dec = ".", sep = "\t")
             }
           )
         
@@ -172,7 +172,7 @@ server <- function(input, output) {
             )
           },
           content = function(file) {
-            write.table(t3, file, dec = ".", sep = "\t")
+            write.csv(t3, file, dec = ".", sep = "\t")
           }
         )
     })
@@ -303,7 +303,7 @@ server <- function(input, output) {
           )
         },
         content = function(file) {
-          write.table(rbind(tt1, tt2), file, sep = "\t")
+          write.csv(rbind(tt1, tt2), file, sep = "\t")
         }
       )
     
@@ -338,7 +338,7 @@ server <- function(input, output) {
           paste("CellMarkers_NeuronsOnly-", input$Markers, ".csv", sep = "")
         },
         content = function(file) {
-          write.table(t1, file, sep = "\t")
+          write.csv(t1, file, sep = "\t")
         }
       )
   })
@@ -362,7 +362,7 @@ server <- function(input, output) {
           paste("CellMarkers_AllCells-", input$Markers2, ".csv", sep = "")
         },
         content = function(file) {
-          write.table(t2, file, sep = "\t")
+          write.csv(t2, file, sep = "\t")
         }
       )
   })
@@ -489,7 +489,7 @@ server <- function(input, output) {
               )
             },
             content = function(file) {
-              write.table(tableDEX, file, sep = "\t")
+              write.csv(tableDEX, file, sep = "\t")
             }
           )
       } else {
