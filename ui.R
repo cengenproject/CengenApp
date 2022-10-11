@@ -360,14 +360,15 @@ ui <- fluidPage(
           )
         ),
         br(),
-        htmlOutput("legend_de_columns", container = h6),
+        htmlOutput("pseudobulk_metadata", container = h6),
         br(),
         
         span(textOutput("text_error_dex"), style =
                "color:red"),
         br(),
         DT::dataTableOutput("MarkTable_Batch"),
-        downloadButton('downloadDEX', "Download table")
+        downloadButton('downloadDEX', "Download table"),
+        htmlOutput("legend_de_columns", container = h6)
       )
     ),
     

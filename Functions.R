@@ -53,9 +53,9 @@ mean.fxn <- function(x) {
 FoldChange <- function (cells.1, cells.2, features) {
   thresh.min <- 0
   pct.1 <- round(x = rowSums(x = allCells.data[features, cells.1, 
-                                        drop = FALSE] > thresh.min)/length(x = cells.1), digits = 3)
+                                               drop = FALSE] > thresh.min)/length(x = cells.1), digits = 3)
   pct.2 <- round(x = rowSums(x = allCells.data[features, cells.2, 
-                                        drop = FALSE] > thresh.min)/length(x = cells.2), digits = 3)
+                                               drop = FALSE] > thresh.min)/length(x = cells.2), digits = 3)
   data.1 <- mean.fxn(allCells.data[features, cells.1, drop = FALSE])
   data.2 <- mean.fxn(allCells.data[features, cells.2, drop = FALSE])
   fc <- (data.1 - data.2)
@@ -113,13 +113,17 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   
   
   p_val_adj = p.adjust(p_val, method = "bonferroni", n = nrow(allCells.data))
- 
+  
   data.frame(gene = features,
              pct.1 = fc.results[features,]$pct.1,
              pct.2 = fc.results[features,]$pct.2,
              avg_logFC = fc.results[features,]$avg_log2FC,
              p_val = p_val,
-             p_val_adj = p_val_adj)
+             p_val_adj = p_val_adj) |>
+    dplyr::arrange(p_val_adj, p_val, desc(abs(avg_logFC))) |>
+    mutate(p_val = signif(p_val, 2),
+           p_val_adj = signif(p_val_adj, 2),
+           avg_logFC = round(avg_logFC, 1))
 }
 
 
@@ -146,13 +150,19 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
                                                                   statistics = data.use[x, ])), 1)
                   })
   
-  p_val_adj <- p.adjust(p_val, method = "bonferroni")
+  FDR <- p.adjust(p_val, method = "BH")
   data.frame(gene = rownames(pseudobulk_matrix),
              mean_1 = mean_1,
              mean_2 = mean_2,
              log2FC = log2FC,
              p_val = p_val,
-             p_val_adj = p_val_adj)
+             FDR = FDR) |>
+    dplyr::arrange(FDR, p_val, desc(abs(log2FC))) |>
+    mutate(p_val = signif(p_val, 2),
+           FDR = signif(FDR, 2),
+           log2FC = round(log2FC, 1),
+           across(contains("mean"),
+                  ~ round(.x, 1)))
 }
 
 
@@ -162,14 +172,18 @@ perform_de_pb_edger <- function(ident.1, ident.2, ...){
   
   load_as_needed("edger_precomputed")
   
-  et <- exactTest(edger_precomputed, pair = c(ident.1, ident.2))
+  et <- exactTest(edger_precomputed, pair = c(ident.2, ident.1))
   
   et$table |>
     tibble::rownames_to_column() |>
-    dplyr::mutate(p_val_adj = p.adjust(PValue, method = "bonferroni")) |>
+    dplyr::mutate(p_val_adj = p.adjust(PValue, method = "BH")) |>
     dplyr::rename(gene = rowname,
                   p_val = PValue,
-                  p_val_adj = p_val_adj)
+                  FDR = p_val_adj) |>
+    dplyr::arrange(FDR, p_val) |>
+    mutate(p_val = signif(p_val, 2),
+           FDR = signif(FDR, 2),
+           logFC = round(logFC, 1))
 }
 
 
@@ -196,24 +210,7 @@ perform_de <- function(ident.1, ident.2, method, ...){
   
   # finish
   
-  tableDEX <-
-    merge(
-      tableDEX,
-      gene_list,
-      by.x = "gene",
-      by.y = "gene_id",
-      all.x = TRUE
-    ) |>
-    dplyr::arrange(p_val_adj) |>
-    mutate(across(starts_with("p_val"),
-                  ~ signif(.x, 2)),
-           across(contains("log"),
-                  ~ round(.x, 1)),
-           across(contains("mean"),
-                  ~ round(.x, 1)))
-  
-  
-  tableDEX
+  left_join(tableDEX, gene_list, by = c("gene" = "gene_id"))
 }
 
 # # Tests

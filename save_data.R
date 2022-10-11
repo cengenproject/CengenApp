@@ -59,14 +59,24 @@ pseudobulk_matrix <- AggregateExpression(allCells,
                                   slot = "counts",
                                   group.by = c("Neuron.type", "SampleID"))[["RNA"]]
 
-pseudosamples <- as.character(colnames(pseudobulk_matrix))
-regx <- stringr::str_match(pseudosamples,
-                           "^([A-Za-z0-9\\-_]+)_([0-9]{4}-ST-[12])$")
-pseudobulk_metadata <- data.frame(sample = pseudosamples,
-                                  cell_type = regx[,2],
-                                  batch = regx[,3])
+pseudosample_counts <- allCells@meta.data |>
+  count(Neuron.type, SampleID) |>
+  mutate(sample_id = paste(Neuron.type, SampleID, sep = "_"))
 
-rm(regx); rm(pseudosamples)
+
+stopifnot(all.equal(pseudosample_counts$sample_id,
+                    as.character(colnames(pseudobulk_matrix))))
+
+# filter out replicates with <10 single cells
+pseudobulk_matrix <- pseudobulk_matrix[,pseudosample_counts$sample_id[pseudosample_counts$n > 10]]
+
+pseudobulk_metadata <- pseudosample_counts |>
+  filter(n > 10) |>
+  rename(sample_id = sample_id,
+         cell_type = Neuron.type,
+         batch = SampleID,
+         nb_single_cells = n)
+
 
 # Precompute edgeR object
 library(edgeR)

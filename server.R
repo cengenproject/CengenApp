@@ -403,6 +403,51 @@ server <- function(input, output) {
       
     } else{
       
+      
+      if (any(b2 == "ALL")){
+        print("testing vs ALL")
+        
+        b2 <- all_cell_types |> setdiff(b1)
+        
+      }
+      
+      if (any(b2 == "NEURONS")){
+        print("Testing against all neurons.")
+        
+        load_as_needed("allCells.metadata")
+        
+        b2 <- all_neuron_types |> setdiff(b1) #does NOT contain "_stressed" neurons
+      }
+      
+      tableDEX <-
+        perform_de(
+          ident.1 = b1,
+          ident.2 = b2,
+          method = input$test
+        )
+      
+      
+      if(input$test == "Pseudobulk: edgeR pairwise exact test" ||
+         input$test == "Pseudobulk: Wilcoxon"){
+        
+        load_as_needed("edger_precomputed")
+        
+        rows_b1 <- edger_precomputed$samples$group %in% b1
+        rows_b2 <- edger_precomputed$samples$group %in% b2
+        
+        nb_sc_group_1 <- edger_precomputed$samples$nb_single_cells[rows_b1] |> sum()
+        nb_sc_group_2 <- edger_precomputed$samples$nb_single_cells[rows_b2] |> sum()
+        nb_rep_group_1 <- edger_precomputed$samples$nb_single_cells[rows_b1] |> length()
+        nb_rep_group_2 <- edger_precomputed$samples$nb_single_cells[rows_b2] |> length()
+        
+        output$pseudobulk_metadata <- renderText({
+          paste0("Comparing group 1 (",nb_sc_group_1," single cells in ",nb_rep_group_1,
+                 " replicates) to group 2 (",nb_sc_group_2," single cells in ",
+                 nb_rep_group_2," replicates)")
+        }, sep = "<br>")
+      } else{output$pseudobulk_metadata <- renderText({""}, sep = "<br>")}
+      
+      
       output$text_error_dex <- renderText({""})
       output$legend_de_columns <- renderText({
         if(input$test == "Wilcoxon on single cells"){
@@ -432,38 +477,8 @@ server <- function(input, output) {
         }
       }, sep = "<br>")
       
-      if (!any(b2 %in% c("ALL", "NEURONS"))){
-        tableDEX <-
-          perform_de(
-            ident.1 = b1,
-            ident.2 = b2,
-            method = input$test
-          )
-      }
       
-      if (any(b2 == "ALL")){
-        print("testing vs ALL")
-        
-        tableDEX <-
-          perform_de(
-            ident.1 = b1,
-            ident.2 = all_cell_types |> setdiff(b1),
-            method = input$test
-          )
-      }
       
-      if (any(b2 == "NEURONS")){
-        print("Testing against all neurons.")
-        
-        load_as_needed("allCells.metadata")
-        
-        tableDEX <-
-          perform_de(
-            ident.1 = b1,
-            ident.2 = all_neuron_types |> setdiff(b1), #does NOT contain "_stressed" neurons
-            method = input$test
-          )
-      }
       
       # Finalize output
       if (nrow(tableDEX) > 0) {
