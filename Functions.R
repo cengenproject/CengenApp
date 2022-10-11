@@ -36,15 +36,15 @@ GetXYAesthetics <- function(plot, geom = 'GeomPoint', plot.first = TRUE) {
 
 ### LabelClusters2 ----
 LabelClusters2 <- function(
-  plot,
-  id,
-  clusters = NULL,
-  labels = NULL,
-  split.by = NULL,
-  repel = TRUE,
-  dims = dims,
-  l1, l2,
-  ...
+    plot,
+    id,
+    clusters = NULL,
+    labels = NULL,
+    split.by = NULL,
+    repel = TRUE,
+    dims = dims,
+    l1, l2,
+    ...
 ) {
   xynames <- unlist(x = GetXYAesthetics(plot = plot), use.names = TRUE)
   if (!id %in% colnames(x = plot$data)) {
@@ -106,7 +106,7 @@ LabelClusters2 <- function(
   #print(head(labels.loc))
   if (length(l1) > 1){
     labels.loc <- dplyr::filter(labels.loc, UMAP_1 > l1[1], UMAP_1<l1[2], UMAP_2>l2[1], UMAP_2<l2[2]) ### Modify to plot labels
-  #print(head(data))
+    #print(head(data))
   }
   geom.use <- ifelse(test = repel, yes = ggrepel::geom_label_repel, no = geom_text)
   plot <- plot + geom.use(
@@ -125,8 +125,8 @@ LabelClusters2 <- function(
 
 ### autocomplete_input ----
 autocomplete_input <- function(
-  id, label, options, value = "", width = NULL,
-  placeholder = NULL, max_options = 0, hide_values = FALSE
+    id, label, options, value = "", width = NULL,
+    placeholder = NULL, max_options = 0, hide_values = FALSE
 ) {
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("jsonlite is needed to convert list of options into json!")
@@ -227,20 +227,20 @@ BlendExpression <- function(data) {
 
 ### SingleDimPlot2 ----
 SingleDimPlot2 <- function(
-  data,
-  dims,
-  col.by = NULL,
-  cols = NULL,
-  pt.size = NULL,
-  shape.by = NULL,
-  order = NULL,
-  label = FALSE,
-  repel = FALSE,
-  label.size = 4,
-  cells.highlight = NULL,
-  cols.highlight = 'red',
-  sizes.highlight = 1,
-  na.value = 'grey50'
+    data,
+    dims,
+    col.by = NULL,
+    cols = NULL,
+    pt.size = NULL,
+    shape.by = NULL,
+    order = NULL,
+    label = FALSE,
+    repel = FALSE,
+    label.size = 4,
+    cells.highlight = NULL,
+    cols.highlight = 'red',
+    sizes.highlight = 1,
+    na.value = 'grey50'
 ) {
   pt.size <- pt.size %||% AutoPointSize(data = data)
   if (length(x = dims) != 2) {
@@ -357,27 +357,27 @@ Melt <- function(x) {
 
 ### FeaturePlot2 ----
 FeaturePlot2 <- function(
-  object,
-  features,
-  dims = c(1, 2),
-  cells = NULL,
-  cols = c("lightgrey",  "blue"),
-  pt.size = NULL,
-  order = FALSE,
-  min.cutoff = NA,
-  max.cutoff = NA,
-  reduction = NULL,
-  split.by = NULL,
-  shape.by = NULL,
-  blend = FALSE,
-  blend.threshold = 0.5,
-  label = FALSE,
-  label.size = 4,
-  ncol = NULL,
-  combine = TRUE,
-  coord.fixed = FALSE,
-  by.col = TRUE,
-  ranges=NULL
+    object,
+    features,
+    dims = c(1, 2),
+    cells = NULL,
+    cols = c("lightgrey",  "blue"),
+    pt.size = NULL,
+    order = FALSE,
+    min.cutoff = NA,
+    max.cutoff = NA,
+    reduction = NULL,
+    split.by = NULL,
+    shape.by = NULL,
+    blend = FALSE,
+    blend.threshold = 0.5,
+    label = FALSE,
+    label.size = 4,
+    ncol = NULL,
+    combine = TRUE,
+    coord.fixed = FALSE,
+    by.col = TRUE,
+    ranges=NULL
 ) {
   no.right <- theme(
     axis.line.y.right = element_blank(),
@@ -683,16 +683,16 @@ FeaturePlot2 <- function(
 
 
 SingleExIPlot <- function(
-  data,
-  idents,
-  split = NULL,
-  type = 'violin',
-  sort = FALSE,
-  y.max = NULL,
-  adjust = 1,
-  pt.size = 0,
-  cols = NULL,
-  log = FALSE
+    data,
+    idents,
+    split = NULL,
+    type = 'violin',
+    sort = FALSE,
+    y.max = NULL,
+    adjust = 1,
+    pt.size = 0,
+    cols = NULL,
+    log = FALSE
 ) {
   set.seed(seed = 42)
   if (!is.data.frame(x = data) || ncol(x = data) != 1) {
@@ -820,28 +820,28 @@ SingleExIPlot <- function(
 
 ### DimPlot2 ----
 DimPlot2 <- function(
-  object,
-  dims = c(1, 2),
-  cells = NULL,
-  cols = NULL,
-  pt.size = NULL,
-  reduction = NULL,
-  group.by = NULL,
-  split.by = NULL,
-  shape.by = NULL,
-  order = NULL,
-  label = FALSE,
-  label.size = 4,
-  repel = FALSE,
-  cells.highlight = NULL,
-  cols.highlight = 'red',
-  sizes.highlight = 1,
-  na.value = 'grey50',
-  combine = TRUE,
-  ncol = NULL,
-  l1,
-  l2,
-  ...
+    object,
+    dims = c(1, 2),
+    cells = NULL,
+    cols = NULL,
+    pt.size = NULL,
+    reduction = NULL,
+    group.by = NULL,
+    split.by = NULL,
+    shape.by = NULL,
+    order = NULL,
+    label = FALSE,
+    label.size = 4,
+    repel = FALSE,
+    cells.highlight = NULL,
+    cols.highlight = 'red',
+    sizes.highlight = 1,
+    na.value = 'grey50',
+    combine = TRUE,
+    ncol = NULL,
+    l1,
+    l2,
+    ...
 ) {
   if (length(x = dims) != 2) {
     stop("'dims' must be a two-length vector")
@@ -938,12 +938,12 @@ FacetTheme <- function(...) {
 
 
 SetHighlight <- function(
-  cells.highlight,
-  cells.all,
-  sizes.highlight,
-  cols.highlight,
-  col.base = 'black',
-  pt.size = 1
+    cells.highlight,
+    cells.all,
+    sizes.highlight,
+    cols.highlight,
+    col.base = 'black',
+    pt.size = 1
 ) {
   if (is.character(x = cells.highlight)) {
     cells.highlight <- list(cells.highlight)
@@ -1034,27 +1034,27 @@ BlendMap <- function(color.matrix) {
 
 
 FeaturePlot3 <- function(
-  object,
-  features,
-  dims = c(1, 2),
-  cells = NULL,
-  cols = c("lightgrey",  "blue"),
-  pt.size = NULL,
-  order = FALSE,
-  min.cutoff = NA,
-  max.cutoff = NA,
-  reduction = NULL,
-  split.by = NULL,
-  shape.by = NULL,
-  blend = FALSE,
-  blend.threshold = 0.5,
-  label = FALSE,
-  label.size = 4,
-  ncol = NULL,
-  combine = TRUE,
-  coord.fixed = FALSE,
-  by.col = TRUE,
-  ranges=NULL
+    object,
+    features,
+    dims = c(1, 2),
+    cells = NULL,
+    cols = c("lightgrey",  "blue"),
+    pt.size = NULL,
+    order = FALSE,
+    min.cutoff = NA,
+    max.cutoff = NA,
+    reduction = NULL,
+    split.by = NULL,
+    shape.by = NULL,
+    blend = FALSE,
+    blend.threshold = 0.5,
+    label = FALSE,
+    label.size = 4,
+    ncol = NULL,
+    combine = TRUE,
+    coord.fixed = FALSE,
+    by.col = TRUE,
+    ranges=NULL
 ) {
   no.right <- theme(
     axis.line.y.right = element_blank(),

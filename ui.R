@@ -133,7 +133,7 @@ ui <- fluidPage(
             textAreaInput(
               inputId = "Tgene_name_batch",
               label = "Query multiple genes for download",
-              value = "flp-1\nflp-2,flp-3,WBGene00001447\nWBGene00001448\nflp-6\nflp-7\nflp-8\nflp-9\nflp-10\nflp-11\nflp-12\nflp-13\nflp-14\nflp-15\nflp-16\nflp-17\nflp-18\nflp-19\nflp-20\nflp-21\nflp-22\nflp-23\nflp-24\nflp-25\nflp-26\nflp-27\nflp-28\nflp-32\nflp-33\nflp-34",
+              value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
               width = "500px",
               height = "100px"
             ),
@@ -235,123 +235,38 @@ ui <- fluidPage(
         )
       )
     ),
-      ### Enriched types Panel ----
-      tabPanel(
-        "Enriched Genes by cell type",
-        fluidPage(
-          hr(),
-          h6(
-            "Find genes differentially expressed in one cell type compared to all other cells in the dataset (neurons only or all cell types). 
+    ### Enriched types Panel ----
+    tabPanel(
+      "Enriched Genes by cell type",
+      fluidPage(
+        hr(),
+        h6(
+          "Find genes differentially expressed in one cell type compared to all other cells in the dataset (neurons only or all cell types). 
             This is NOT a comprehensive list of genes detected in each cell type."
-          ),
-          h6("Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."),
-          textOutput("TopMarkers cell plot"),
+        ),
+        h6("Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."),
+        textOutput("TopMarkers cell plot"),
+        selectInput(
+          inputId = "dataset2",
+          label = "Choose dataset",
+          choices = c("All cell types", "Neurons only")
+        ),
+        conditionalPanel(
+          "input.dataset2 == 'Neurons only'",
           selectInput(
-            inputId = "dataset2",
-            label = "Choose dataset",
-            choices = c("All cell types", "Neurons only")
+            inputId = "Markers",
+            label = "Select cluster",
+            choices = sort(unique(allNeurons$`Neuron.type`)),
+            selected = "SIA"
           ),
-          conditionalPanel(
-            "input.dataset2 == 'Neurons only'",
-            selectInput(
-              inputId = "Markers",
-              label = "Select cluster",
-              choices = sort(unique(allNeurons$`Neuron.type`)),
-              selected = "SIA"
-            ),
-            textInput(
-              inputId = "top",
-              label = "Show top X genes",
-              value = "100"
-            ),
-            h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
-            DT::dataTableOutput("MarkTable"),
-            downloadButton('downloadMarkers', "Download table"),
-            h6("HEADER LEGEND:"),
-            h6(
-              "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
-            ),
-            h6(
-              "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
-            ),
-            h6(
-              "avg_logFC: Log of the expression fold change between group 1 and group 2."
-            )
+          textInput(
+            inputId = "top",
+            label = "Show top X genes",
+            value = "100"
           ),
-          conditionalPanel(
-            "input.dataset2 == 'All cell types'",
-            selectInput(
-              inputId = "Markers2",
-              label = "Select cluster",
-              choices = sort(unique(allCells$`Neuron.type`)),
-              selected = "SIA"
-            ),
-            textInput(
-              inputId = "top2",
-              label = "Show top X genes",
-              value = "100"
-            ),
-            h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
-            DT::dataTableOutput("MarkTable2"),
-            downloadButton('downloadMarkers2', "Download table"),
-            h6("HEADER LEGEND:"),
-            h6(
-              "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
-            ),
-            h6(
-              "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
-            ),
-            h6(
-              "avg_logFC: Log of the expression fold change between group 1 and group 2."
-            )
-          )
-        )
-      ),
-      ### DEX panel ----
-      tabPanel(
-        "Find Differential Expression between Cell Types",
-        fluidPage(
-          hr(),
-          h6("Find differentially expressed genes between two cell types or two groups of cell types."),
-          h6("The calculation can take a few minutes."),
           h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
-          hr(),
-          fluidRow(
-            column(
-              4,
-              selectInput(
-                inputId = "batch1",
-                label = "Select Group 1",
-                choices = sort(unique(allCells$`Neuron.type`)),
-                selected = "AVL",
-                multiple = TRUE
-              ),
-              selectInput(
-                inputId = "batch2",
-                label = "Select Group 2: Introduce cell types, NEURONS or ALL",
-                choices = c("ALL","NEURONS",sort(unique(allCells$`Neuron.type`))),
-                selected = c("RME_DV","RME_LR"),
-                multiple = TRUE
-              ),
-              actionButton("DEXButton", "Calculate DEX", icon = icon("hand-o-right"))
-              
-            ),
-            column(
-              3,
-              selectInput(
-                inputId = "test",
-                label = "Select statistical test",
-                choices = c("wilcox", "bimod", "roc", "t", "LR")
-              ),
-              textInput(
-                inputId = "topM2",
-                label = "Show top X genes",
-                value = "100"
-              )
-              
-            )
-          ),
-          br(),
+          DT::dataTableOutput("MarkTable"),
+          downloadButton('downloadMarkers', "Download table"),
           h6("HEADER LEGEND:"),
           h6(
             "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
@@ -361,266 +276,351 @@ ui <- fluidPage(
           ),
           h6(
             "avg_logFC: Log of the expression fold change between group 1 and group 2."
-          ),
-          br(),
-          
-          DT::dataTableOutput("MarkTable_ClusterCells"),
-          span(textOutput("text2"), style =
-                 "color:red"),
-          br(),
-          DT::dataTableOutput("MarkTable_Batch"),
-          downloadButton('downloadDEX', "Download table")
-        )
-      ),
-      ### Single cell panel ----
-      tabPanel("Single cell plot", fluidPage(
-        hr(),
-        h6("Plot cells colored by cell type, experiment, or gene expression."),
-        column(
-          3,
-          h4('Integrated single-cell (10X) analysis'),
-          wellPanel(
-            selectInput(
-              inputId = "dataset",
-              label = "Choose dataset",
-              choices = c("All cell types", "Neurons only")
-            ),
-            selectInput(
-              inputId = "Plots",
-              label = "Features to plot",
-              choices = c("Metadata", "Individual genes", "Colocalization"),
-              selected = "Individual genes"
-            ),
-            # One feature ----
-            conditionalPanel(
-              ### METADATA PANELS neurons ----
-              condition = "input.Plots == 'Metadata' && input.dataset == 'Neurons only'",
-              selectInput(
-                "featuresMetadata",
-                "Metadata",
-                colnames(allNeurons@meta.data)
-              ),
-              
-              ### CLUSTERS PANELS
-              conditionalPanel(
-                condition = "input.featuresMetadata == 'Neuron.type' && input.dataset == 'Neurons only'",
-                selectInput(
-                  "Cluster",
-                  "Highlight cells",
-                  choices = unique(allNeurons$Neuron.type)
-                )
-              ),
-              conditionalPanel(
-                condition = "input.featuresMetadata == 'Experiment' && input.dataset == 'Neurons only'",
-                selectInput(
-                  "Cluster2",
-                  "Highlight cells",
-                  choices = unique(allNeurons$Experiment)
-                )
-              ),
-              conditionalPanel(
-                condition = "input.featuresMetadata == 'Detection' && input.dataset == 'Neurons only'",
-                selectInput("Cluster3", "Highlight cells", choices = unique(allNeurons$Detection))
-              )
-            ),
-            
-            conditionalPanel(
-              ### METADATA PANELS all cells ----
-              condition = "input.Plots == 'Metadata' && input.dataset == 'All cell types'",
-              selectInput(
-                "featuresMetadata2",
-                "Metadata",
-                colnames(allCells@meta.data)
-              ),
-              ### CLUSTERS PANELS
-              conditionalPanel(
-                condition = "input.featuresMetadata2 == 'Neuron.type' && input.dataset == 'All cell types'",
-                selectInput(
-                  "Cluster.2",
-                  "Highlight cells",
-                  choices = unique(allCells$Neuron.type)
-                )
-              ),
-              conditionalPanel(
-                condition = "input.featuresMetadata2 == 'Experiment' && input.dataset == 'All cell types'",
-                selectInput(
-                  "Cluster2.2",
-                  "Highlight cells",
-                  choices = unique(allCells$Experiment)
-                )
-              ),
-              conditionalPanel(
-                condition = "input.featuresMetadata2 == 'Detection' && input.dataset == 'All cell types'",
-                selectInput("Cluster3.2", "Highlight cells", choices = unique(allCells$Detection))
-              ),
-              conditionalPanel(
-                condition = "input.featuresMetadata2 == 'Tissue.type' && input.dataset == 'All cell types'",
-                selectInput("Cluster4", "Highlight cells", choices = unique(allCells$Tissue.type))
-              )
-            ),
-            # One gene ----
-            conditionalPanel(
-              condition = "input.Plots == 'Individual genes'",
-              textInput(
-                inputId = "GeneName",
-                label = "Gene name (Symbol)",
-                value = "ric-4"
-              )
-            ),
-            # Two gene colocalization ----
-            conditionalPanel(
-              condition = "input.Plots == 'Colocalization'",
-              textInput(
-                inputId = "ColocalizationGenes1",
-                label = "Gene 1",
-                value = "zig-4"
-              ),
-              hr(),
-              textInput(
-                inputId = "ColocalizationGenes2",
-                label = "Gene 2",
-                value = "F23D12.3"
-              )
-            ),
-            fluidRow(column(
-              6, actionButton("PlotButton", "Plot data", icon = icon("hand-o-right"))
-            ))
           )
         ),
-        
-        column(
-          9,
-          textOutput("Single cell plot"),
-          conditionalPanel(
-            condition = "input.Plots == 'Metadata'",
-            downloadLink("downloadClust", "Download Plot"),
-            plotOutput(
-              "SinglePlot",
-              width = "100%",
-              dblclick = "plotPermanent_dblclick",
-              brush = brushOpts(id = "plotPermanent_brush", resetOnNew = TRUE)
-            ),
-            h5(
-              "Select region and do double-click to zoom in and double-click to zoom out."
-            ),
-            hr(),
-            downloadLink("downloadHigh", "Download Plot"),
-            plotOutput("High", width = "100%")
+        conditionalPanel(
+          "input.dataset2 == 'All cell types'",
+          selectInput(
+            inputId = "Markers2",
+            label = "Select cluster",
+            choices = sort(unique(allCells$`Neuron.type`)),
+            selected = "SIA"
           ),
-          conditionalPanel(
-            condition = "input.Plots == 'Colocalization'",
-            sliderInput(
-              "blend",
-              "Choose blend",
-              min = 0,
-              max = 1,
-              value = 0.25
-            ),
-            plotOutput("SinglePlotDouble", width =
-                         "50%"),
-            downloadLink("downloadCol", "Download plot"),
-            h4(span(textOutput("gene1utr"), style =
-                      "color:red")),
-            h4(span(textOutput("gene2utr"), style =
-                      "color:red")),
-            hr(),
-            h5(
-              "Select region in the panel below and do double-click to zoom in and double-click to zoom out."
-            ),
-            plotOutput(
-              "SinglePlotPermanent",
-              width = "50%",
-              dblclick = "plotPermanent_dblclick",
-              brush = brushOpts(id = "plotPermanent_brush", resetOnNew = TRUE)
-            ),
-            hr()
-          ),
-          conditionalPanel(
-            condition = "input.Plots == 'Individual genes'",
-            h5(
-              "Select region and do double-click to zoom in and double-click to zoom out."
-            ),
-            plotOutput(
-              "SinglePlot2",
-              width = "100%",
-              dblclick = "plotPermanent_dblclick",
-              brush = brushOpts(id = "plotPermanent_brush", resetOnNew = TRUE)
-            ),
-            h4(span(textOutput("geneUTR"), style =
-                      "color:red")),
-            hr(),
-            downloadLink("downloadExp", "Download plot"),
-            plotOutput("FeaturePlot", width = "100%"),
-            hr(),
-            downloadLink("downloadViolin", "Download plot"),
-            plotOutput("Violin", width = "100%")
-          )
-        )
-      )),
-      tabPanel(
-        "Heatmaps of gene expression",
-        fluidPage(
-          hr(),
-          h6(
-            "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
+          textInput(
+            inputId = "top2",
+            label = "Show top X genes",
+            value = "100"
           ),
           h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
-          textAreaInput(
-            inputId = "genelist",
-            label = "Introduce a list of genes",
-            value = "flp-1\nflp-2,flp-3,WBGene00001447\nWBGene00001448\nflp-6\nflp-7\nflp-8\nflp-9\nflp-10\nflp-11\nflp-12\nflp-13\nflp-14\nflp-15\nflp-16\nflp-17\nflp-18\nflp-19\nflp-20\nflp-21\nflp-22\nflp-23\nflp-24\nflp-25\nflp-26\nflp-27\nflp-28\nflp-32\nflp-33\nflp-34",
-            width = "500px",
-            height = "100px"
-          ),
-        
-         
-            selectInput(
-              inputId = "dataset_heatmap",
-              label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
-              choices = c("Neurons only", "All cell types")
-            ),    
-         
-            
-              actionButton(
-              "PlotHeatmap","Plot heatmap from list",
-              icon = icon("hand-o-right")
-             
-          
-          ),
-          hr(),
-          fluidRow(
-            column(3,fileInput("file1", NULL,
-                    accept = c(
-                      "text/csv",
-                      "text/comma-separated-values,text/plain",
-                      "txt")
-            )),
-            #column(3,actionButton("resetFile", "Clear uploaded file")),
-            column(3,   actionButton(
-              "PlotHeatmap2",
-              "Plot heatmap from file",
-              icon = icon("hand-o-right")
-            ))
-          ),
-        
-          hr(),
+          DT::dataTableOutput("MarkTable2"),
+          downloadButton('downloadMarkers2', "Download table"),
+          h6("HEADER LEGEND:"),
           h6(
-            "You can identify circles by clicking on them."
+            "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
           ),
-         
-          div(style="height:30px;width:800px;padding-left:10px;padding-right:10px;background-color:#ffffff;",fluidRow(verbatimTextOutput("vals", placeholder = TRUE))),
-          #uiOutput("dynamic"),
-          br(),
-          br(),
-          br(),
-          plotOutput("heatmap", width = "100%",hover = "plot_hover"),
-          
-          hr(),
-          downloadLink("downloadheatmap", "Download plot")
-          
-            
+          h6(
+            "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
+          ),
+          h6(
+            "avg_logFC: Log of the expression fold change between group 1 and group 2."
+          )
         )
+      )
+    ),
+    ### DEX panel ----
+    tabPanel(
+      "Find Differential Expression between Cell Types",
+      fluidPage(
+        hr(),
+        h6("Find differentially expressed genes between two cell types or two groups of cell types."),
+        h6("The calculation can take a few minutes."),
+        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        hr(),
+        fluidRow(
+          column(
+            4,
+            selectInput(
+              inputId = "batch1",
+              label = "Select Group 1",
+              choices = sort(unique(allCells$`Neuron.type`)),
+              selected = "AVL",
+              multiple = TRUE
+            ),
+            selectInput(
+              inputId = "batch2",
+              label = "Select Group 2: Introduce cell types, NEURONS or ALL",
+              choices = c("ALL","NEURONS",sort(unique(allCells$`Neuron.type`))),
+              selected = c("RME_DV","RME_LR"),
+              multiple = TRUE
+            ),
+            actionButton("DEXButton", "Calculate DEX", icon = icon("hand-o-right"))
+            
+          ),
+          column(
+            3,
+            selectInput(
+              inputId = "test",
+              label = "Select statistical test",
+              choices = c("wilcox", "bimod", "roc", "t", "LR")
+            ),
+            textInput(
+              inputId = "topM2",
+              label = "Show top X genes",
+              value = "100"
+            )
+            
+          )
+        ),
+        br(),
+        h6("HEADER LEGEND:"),
+        h6(
+          "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
+        ),
+        h6(
+          "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
+        ),
+        h6(
+          "avg_logFC: Log of the expression fold change between group 1 and group 2."
+        ),
+        br(),
+        
+        DT::dataTableOutput("MarkTable_ClusterCells"),
+        span(textOutput("text2"), style =
+               "color:red"),
+        br(),
+        DT::dataTableOutput("MarkTable_Batch"),
+        downloadButton('downloadDEX', "Download table")
+      )
+    ),
+    ### Single cell panel ----
+    tabPanel("Single cell plot", fluidPage(
+      hr(),
+      h6("Plot cells colored by cell type, experiment, or gene expression."),
+      column(
+        3,
+        h4('Integrated single-cell (10X) analysis'),
+        wellPanel(
+          selectInput(
+            inputId = "dataset",
+            label = "Choose dataset",
+            choices = c("All cell types", "Neurons only")
+          ),
+          selectInput(
+            inputId = "Plots",
+            label = "Features to plot",
+            choices = c("Metadata", "Individual genes", "Colocalization"),
+            selected = "Individual genes"
+          ),
+          # One feature ----
+          conditionalPanel(
+            ### METADATA PANELS neurons ----
+            condition = "input.Plots == 'Metadata' && input.dataset == 'Neurons only'",
+            selectInput(
+              "featuresMetadata",
+              "Metadata",
+              colnames(allNeurons@meta.data)
+            ),
+            
+            ### CLUSTERS PANELS
+            conditionalPanel(
+              condition = "input.featuresMetadata == 'Neuron.type' && input.dataset == 'Neurons only'",
+              selectInput(
+                "Cluster",
+                "Highlight cells",
+                choices = unique(allNeurons$Neuron.type)
+              )
+            ),
+            conditionalPanel(
+              condition = "input.featuresMetadata == 'Experiment' && input.dataset == 'Neurons only'",
+              selectInput(
+                "Cluster2",
+                "Highlight cells",
+                choices = unique(allNeurons$Experiment)
+              )
+            ),
+            conditionalPanel(
+              condition = "input.featuresMetadata == 'Detection' && input.dataset == 'Neurons only'",
+              selectInput("Cluster3", "Highlight cells", choices = unique(allNeurons$Detection))
+            )
+          ),
+          
+          conditionalPanel(
+            ### METADATA PANELS all cells ----
+            condition = "input.Plots == 'Metadata' && input.dataset == 'All cell types'",
+            selectInput(
+              "featuresMetadata2",
+              "Metadata",
+              colnames(allCells@meta.data)
+            ),
+            ### CLUSTERS PANELS
+            conditionalPanel(
+              condition = "input.featuresMetadata2 == 'Neuron.type' && input.dataset == 'All cell types'",
+              selectInput(
+                "Cluster.2",
+                "Highlight cells",
+                choices = unique(allCells$Neuron.type)
+              )
+            ),
+            conditionalPanel(
+              condition = "input.featuresMetadata2 == 'Experiment' && input.dataset == 'All cell types'",
+              selectInput(
+                "Cluster2.2",
+                "Highlight cells",
+                choices = unique(allCells$Experiment)
+              )
+            ),
+            conditionalPanel(
+              condition = "input.featuresMetadata2 == 'Detection' && input.dataset == 'All cell types'",
+              selectInput("Cluster3.2", "Highlight cells", choices = unique(allCells$Detection))
+            ),
+            conditionalPanel(
+              condition = "input.featuresMetadata2 == 'Tissue.type' && input.dataset == 'All cell types'",
+              selectInput("Cluster4", "Highlight cells", choices = unique(allCells$Tissue.type))
+            )
+          ),
+          # One gene ----
+          conditionalPanel(
+            condition = "input.Plots == 'Individual genes'",
+            textInput(
+              inputId = "GeneName",
+              label = "Gene name (Symbol)",
+              value = "ric-4"
+            )
+          ),
+          # Two gene colocalization ----
+          conditionalPanel(
+            condition = "input.Plots == 'Colocalization'",
+            textInput(
+              inputId = "ColocalizationGenes1",
+              label = "Gene 1",
+              value = "zig-4"
+            ),
+            hr(),
+            textInput(
+              inputId = "ColocalizationGenes2",
+              label = "Gene 2",
+              value = "F23D12.3"
+            )
+          ),
+          fluidRow(column(
+            6, actionButton("PlotButton", "Plot data", icon = icon("hand-o-right"))
+          ))
+        )
+      ),
+      
+      column(
+        9,
+        textOutput("Single cell plot"),
+        conditionalPanel(
+          condition = "input.Plots == 'Metadata'",
+          downloadLink("downloadClust", "Download Plot"),
+          plotOutput(
+            "SinglePlot",
+            width = "100%",
+            dblclick = "plotPermanent_dblclick",
+            brush = brushOpts(id = "plotPermanent_brush", resetOnNew = TRUE)
+          ),
+          h5(
+            "Select region and do double-click to zoom in and double-click to zoom out."
+          ),
+          hr(),
+          downloadLink("downloadHigh", "Download Plot"),
+          plotOutput("High", width = "100%")
+        ),
+        conditionalPanel(
+          condition = "input.Plots == 'Colocalization'",
+          sliderInput(
+            "blend",
+            "Choose blend",
+            min = 0,
+            max = 1,
+            value = 0.25
+          ),
+          plotOutput("SinglePlotDouble", width =
+                       "50%"),
+          downloadLink("downloadCol", "Download plot"),
+          h4(span(textOutput("gene1utr"), style =
+                    "color:red")),
+          h4(span(textOutput("gene2utr"), style =
+                    "color:red")),
+          hr(),
+          h5(
+            "Select region in the panel below and do double-click to zoom in and double-click to zoom out."
+          ),
+          plotOutput(
+            "SinglePlotPermanent",
+            width = "50%",
+            dblclick = "plotPermanent_dblclick",
+            brush = brushOpts(id = "plotPermanent_brush", resetOnNew = TRUE)
+          ),
+          hr()
+        ),
+        conditionalPanel(
+          condition = "input.Plots == 'Individual genes'",
+          h5(
+            "Select region and do double-click to zoom in and double-click to zoom out."
+          ),
+          plotOutput(
+            "SinglePlot2",
+            width = "100%",
+            dblclick = "plotPermanent_dblclick",
+            brush = brushOpts(id = "plotPermanent_brush", resetOnNew = TRUE)
+          ),
+          h4(span(textOutput("geneUTR"), style =
+                    "color:red")),
+          hr(),
+          downloadLink("downloadExp", "Download plot"),
+          plotOutput("FeaturePlot", width = "100%"),
+          hr(),
+          downloadLink("downloadViolin", "Download plot"),
+          plotOutput("Violin", width = "100%")
+        )
+      )
+    )),
+    tabPanel(
+      "Heatmaps of gene expression",
+      fluidPage(
+        hr(),
+        h6(
+          "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
+        ),
+        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        textAreaInput(
+          inputId = "genelist",
+          label = "Introduce a list of genes",
+          value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
+          width = "500px",
+          height = "100px"
+        ),
+        
+        
+        selectInput(
+          inputId = "dataset_heatmap",
+          label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
+          choices = c("Neurons only", "All cell types")
+        ),    
+        
+        
+        actionButton(
+          "PlotHeatmap","Plot heatmap from list",
+          icon = icon("hand-o-right")
+          
+          
+        ),
+        hr(),
+        fluidRow(
+          column(3,fileInput("file1", NULL,
+                             accept = c(
+                               "text/csv",
+                               "text/comma-separated-values,text/plain",
+                               "txt")
+          )),
+          #column(3,actionButton("resetFile", "Clear uploaded file")),
+          column(3,   actionButton(
+            "PlotHeatmap2",
+            "Plot heatmap from file",
+            icon = icon("hand-o-right")
+          ))
+        ),
+        
+        h6(
+          "You can identify circles by clicking on them."
+        ),
+        
+        div(style="height:30px;width:800px;padding-left:10px;padding-right:10px;background-color:#ffffff;",fluidRow(verbatimTextOutput("vals", placeholder = TRUE))),
+        #uiOutput("dynamic"),
+        br(),
+        #br(),
+        #downloadLink("downloadheatmap", "Download plot"),
+        br(),
+        plotOutput("heatmap", width = "100%",hover = "plot_hover")
+        
+        
+        
+        
+        
       )
     )
   )
- 
+)
+
