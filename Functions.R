@@ -48,6 +48,7 @@ mean.fxn <- function(x) {
              base = 2))
 }
 
+
 # note this is a rewrite of Seurat::FoldChange that does only the minimum required here,
 # and works directly with the content of the Seurat object( not a full Seurat object)
 FoldChange <- function (cells.1, cells.2, features) {
@@ -212,6 +213,7 @@ perform_de <- function(ident.1, ident.2, method, ...){
   
   left_join(tableDEX, gene_list, by = c("gene" = "gene_id"))
 }
+
 
 # # Tests
 # res3 <- perform_de("AVL", "AWC_OFF", "Wilcoxon on single cells")

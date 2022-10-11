@@ -185,7 +185,15 @@ server <- function(input, output) {
     
     gns1 <- strsplit(as.character(input$Tgene_name_batch), "\n| |\\,|\t")
     gns1 <- as.data.frame(gns1)[,1]
-    gns <- unique(c(gns1, filter(gene_list, gene_id %in% gns1 | seqnames %in% gns1)$gene_name))
+    
+    star <- grep("\\*", gns1)
+    
+    families1 <- c()
+    for(i in star){ 
+      families1 <- c(families1, grep( gsub("\\*", "", gns1[i]), gene_list$gene_name, value = TRUE) )
+    }
+    
+    gns <- unique(c(families1, gns1, filter(gene_list, gene_id %in% gns1 | seqnames %in% gns1)$gene_name))
     
     if( input$Tgene_cut_batch == "All Cells Unfiltered" ) { 
       th = L4.all.TPM.raw_th
@@ -661,16 +669,16 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 200,
-            width = 500,
-            units = "mm" ,
+            height = 15*length(unique(g$data$gene_name)),
+            #width = 1889.76,
+            units = "px" ,
             limitsize = FALSE,
             device = "png"
           )
         }
       )
-    
-    output$heatmap <- renderPlot(g)
+    l <- length(unique(g$data$gene_name))
+    output$heatmap <- renderPlot(g, height = ifelse(l>40, 10*l, "auto"))
     
     output$dynamic <- renderUI({
       #req(input$plot_hover)
@@ -699,12 +707,17 @@ server <- function(input, output) {
     
     ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")
     ss <- as.data.frame(ss)[,1]
-    ss <- unique(c(ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
+    star <- grep("\\*", ss)
     
-    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) &
-                !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
-    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) &
-                    !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    families <- c()
+    for(i in star){ 
+      families <- c(families, grep( gsub("\\*", "", ss[i]), gene_list$gene_name, value = TRUE) )
+    }
+    
+    ss <- unique(c(families, ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
+    
+    mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
     
     if(ds=="Neurons only"){
       
@@ -715,7 +728,11 @@ server <- function(input, output) {
       L4.TPM=L4.TPM.medium
       heatmapdata=med.scaled.long
       cc = colnames(ths)[-c(1,130,131)]
-      missing = mis} else {
+      missing = mis
+      } else {
+        
+        load_as_needed("L4.all.TPM.raw")
+        
         L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
         heatmapdata=L4.TPM.raw.scaled.long
         cc=colnames(L4.all.TPM.raw)
@@ -741,7 +758,10 @@ server <- function(input, output) {
     
     for( i in missing ){
       dff <- data.frame(gene_name=i, cell.type= cc, scaled.expr=0, prop=0, Modality="NA")
-      if(ds!="Neurons only"){colnames(dff)[5]<-"tissue"}
+      if(ds!="Neurons only"){
+        colnames(dff)[5]<-"tissue"
+        dff$tissue <- filter(L4.TPM.raw.scaled.long, gene_name=="nduo-6")$tissue
+      }
       flp.neuron.scaled <- rbind(flp.neuron.scaled, dff)
     }
     
@@ -814,16 +834,16 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 200,
-            width = 500,
-            units = "mm" ,
+            height = 10*length(unique(g$data$gene_name)),
+            width = 1889.76,
+            units = "px",
             limitsize = FALSE,
             device = "png"
           )
         }
       )
     
-    output$heatmap <- renderPlot(g)
+    output$heatmap <- renderPlot(g, height = 10*length(unique(g$data$gene_name)))
     
     output$dynamic <- renderUI({
       #req(input$plot_hover)

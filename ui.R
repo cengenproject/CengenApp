@@ -139,7 +139,7 @@ ui <- fluidPage(
             textAreaInput(
               inputId = "Tgene_name_batch",
               label = "Query multiple genes for download",
-              value = "flp-1\nflp-2,flp-3,WBGene00001447\nWBGene00001448\nflp-6\nflp-7\nflp-8\nflp-9\nflp-10\nflp-11\nflp-12\nflp-13\nflp-14\nflp-15\nflp-16\nflp-17\nflp-18\nflp-19\nflp-20\nflp-21\nflp-22\nflp-23\nflp-24\nflp-25\nflp-26\nflp-27\nflp-28\nflp-32\nflp-33\nflp-34",
+              value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
               width = "500px",
               height = "100px"
             ),
@@ -299,7 +299,7 @@ ui <- fluidPage(
             value = "100"
           ),
           h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
-
+          
           DT::dataTableOutput("MarkTable2"),
           downloadButton('downloadMarkers2', "Download table"),
           h6("HEADER LEGEND:"),
@@ -315,6 +315,8 @@ ui <- fluidPage(
         )
       )
     ),
+    
+    
     ### Find Differential Expression between Cell Types Panel ----
     tabPanel(
       "Find Differential Expression between Cell Types",
@@ -419,7 +421,6 @@ ui <- fluidPage(
           ))
         ),
         
-        hr(),
         h6(
           "You can identify circles by clicking on them."
         ),
