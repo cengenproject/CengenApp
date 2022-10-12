@@ -1,5 +1,5 @@
-#### CenGenAPP 2018-2020
-#### Report bugs to: gabrielsantperebaro@gmail.com
+#### CeNGEN-app 2018-2022
+#### Report bugs at https://github.com/cengenproject/CengenApp/issues
 
 
 
@@ -8,6 +8,7 @@ server <- function(input, output) {
   ### Gene expression by cell type Panel ----
   
   observeEvent(input$TCell, {
+    cat("--> thresholded gene expression TCell\n")
     withProgress(message = "Obtaining information...", value = 0, {
       
       load_as_needed("L4.all.TPM.raw_th")
@@ -75,6 +76,7 @@ server <- function(input, output) {
   })
   
   observeEvent(input$TGene, {
+    cat("--> thresholded gene expression TGene\n")
     
     load_as_needed("L4.all.TPM.raw_th")
     load_as_needed("ths")
@@ -179,6 +181,7 @@ server <- function(input, output) {
   })
   
   observeEvent( list(input$Tgene_name_batch, input$Tgene_cut_batch) , {
+    cat("--> thresholded gene expression Tgene_name_batch/Tgene_cut_batch\n")
     
     load_as_needed("L4.all.TPM.raw_th")
     load_as_needed("ths")
@@ -244,6 +247,7 @@ server <- function(input, output) {
   ### Find markers based on percentage of expression Panel ----
   
   observeEvent(input$Filter, {
+    cat("--> find markers Filter\n")
     
     load_as_needed("pcttable")
     
@@ -321,6 +325,7 @@ server <- function(input, output) {
   ### Enriched Genes by cell type Panel ----
   
   observeEvent(input$Markers, {
+    cat("--> enriched genes Markers\n")
     
     load_as_needed("markers")
     
@@ -350,7 +355,9 @@ server <- function(input, output) {
         }
       )
   })
+  
   observeEvent(input$Markers2, {
+    cat("--> enriched genes Markers2\n")
     
     load_as_needed("markersAllcells")
     
@@ -380,8 +387,7 @@ server <- function(input, output) {
   
   ### Find Differential Expression between Cell Types Panel ----
   observeEvent(input$DEXButton, {
-    
-    cat("Testing DE of ", input$batch1, " vs ", input$batch2, "\n")
+    cat("--> testing DE of ", input$batch1, " vs ", input$batch2, "\n")
     
     b1 <- unlist(strsplit(input$batch1, split = ","))
     b1 <- gsub(" ", "", as.character(b1))
@@ -534,7 +540,8 @@ server <- function(input, output) {
   
   ### Heatmaps of gene expression Panel ----
     
-  observeEvent(input$PlotHeatmap, {
+  observeEvent(input$PlotHeatmapFromList, {
+    cat("--> heatmap PlotHeatmapFromList\n")
     
     load_as_needed("med.scaled.long")
     load_as_needed("L4.TPM.raw.scaled.long")
@@ -696,7 +703,8 @@ server <- function(input, output) {
   
   ### From file
   
-  observeEvent(input$PlotHeatmap2, {
+  observeEvent(input$PlotHeatmapFromFile, {
+    cat("--> heatmap PlotHeatmapFromFile\n")
     
     load_as_needed("med.scaled.long")
     load_as_needed("L4.TPM.raw.scaled.long")

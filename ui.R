@@ -1,5 +1,8 @@
-#### CenGenAPP 2018-2020
-#### Report bugs to: gabrielsantperebaro@gmail.com
+#### CeNGEN-app 2018-2022
+#### Report bugs at https://github.com/cengenproject/CengenApp/issues
+
+
+cat("############# Loading libraries #################\n")
 
 require(shiny)
 library(shinyjs)
@@ -22,15 +25,18 @@ library(qs)
 library(Matrix)
 library(limma)
 
+cat("############## Setting options ##################\n")
+
 options(repos = BiocManager::repositories())
 options(shiny.maxRequestSize = 400 * 1024 ^ 2)
-
-source("Functions.R")
-
 
 options(scipen = 0)
 options(digits = 2)
 
+cat("############ End initializations ################\n")
+
+
+source("Functions.R")
 utr <-
   c(
     "WBGene00023498",
@@ -113,7 +119,7 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
-            actionButton("TCell", "Expressed genes", icon = icon("hand-o-right"))
+            actionButton("TCell", "Expressed genes", icon = icon("hand-point-right"))
             
           ),
           #column(width = 1, offset = 0, style='padding:5px;'),
@@ -130,7 +136,7 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
-            actionButton("TGene", "Which cell types", icon = icon("hand-o-right"))
+            actionButton("TGene", "Which cell types", icon = icon("hand-point-right"))
           ),
           column(
             2,
@@ -206,7 +212,7 @@ ui <- fluidPage(
               label = "Minimum percentage of cells expressing the gene",
               value = 65
             ),
-            actionButton("Filter", "Run query", icon = icon("hand-o-right"))
+            actionButton("Filter", "Run query", icon = icon("hand-point-right"))
             
           ),
           #column(width = 1, offset = 0, style='padding:5px;'),
@@ -343,7 +349,7 @@ ui <- fluidPage(
               selected = c("RME_DV","RME_LR"),
               multiple = TRUE
             ),
-            actionButton("DEXButton", "Calculate DEX", icon = icon("hand-o-right"))
+            actionButton("DEXButton", "Calculate DEX", icon = icon("hand-point-right"))
             
           ),
           column(
@@ -400,8 +406,8 @@ ui <- fluidPage(
         
         
         actionButton(
-          "PlotHeatmap","Plot heatmap from list",
-          icon = icon("hand-o-right")
+          "PlotHeatmapFromList","Plot heatmap from list",
+          icon = icon("hand-point-right")
           
           
         ),
@@ -415,9 +421,9 @@ ui <- fluidPage(
           )),
           #column(3,actionButton("resetFile", "Clear uploaded file")),
           column(3,   actionButton(
-            "PlotHeatmap2",
+            "PlotHeatmapFromFile",
             "Plot heatmap from file",
-            icon = icon("hand-o-right")
+            icon = icon("hand-point-right")
           ))
         ),
         
