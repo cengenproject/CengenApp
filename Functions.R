@@ -224,10 +224,34 @@ perform_de <- function(ident.1, ident.2, method, ...){
 # head(res2)
 # head(res3)
 # 
-# list(wilcox = res2$gene[res2$p_val_adj < .05],
-#      edgeR = res1$gene[res1$p_val_adj < .05],
+# list(wilcox = res2$gene[res2$FDR < .05],
+#      edgeR = res1$gene[res1$FDR < .05],
 #      sc = res3$gene[res3$p_val_adj < .05]) |>
 #   eulerr::euler() |>
 #   plot()
+# 
+# left_join(res3 |>
+#                   select(gene, sc_wilcox = avg_logFC),
+#                 res1 |>
+#                   select(gene, pb_edger = logFC),
+#                 by = "gene") |>
+#   ggplot() +
+#   geom_point(aes(x = sc_wilcox, y = pb_edger))
+# 
+# left_join(res3 |>
+#             select(gene, sc_wilcox = avg_logFC),
+#           res2 |>
+#             select(gene, pb_wilcox = log2FC),
+#           by = "gene") |>
+#   ggplot() +
+#   geom_point(aes(x = sc_wilcox, y = pb_wilcox))
+# left_join(res1 |>
+#             select(gene, pb_edger = logFC),
+#           res2 |>
+#             select(gene, pb_wilcox = log2FC),
+#           by = "gene") |>
+#   ggplot() +
+#   geom_point(aes(x = pb_edger, y = pb_wilcox))
+
 
 
