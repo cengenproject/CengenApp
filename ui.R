@@ -20,6 +20,7 @@ library(plotly)
 library(expss)
 library(xlsx)
 
+library(BiocManager)
 library(edgeR)
 library(qs)
 library(Matrix)
