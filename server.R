@@ -540,6 +540,7 @@ server <- function(input, output) {
   
   ### Heatmaps of gene expression Panel ----
     
+  #~ From list ----
   observeEvent(input$PlotHeatmapFromList, {
     cat("--> heatmap PlotHeatmapFromList\n")
     
@@ -603,7 +604,10 @@ server <- function(input, output) {
     
     for( i in missing ){
       dff <- data.frame(gene_name=i, cell.type= cc, scaled.expr=0, prop=0, Modality="NA")
-      if(ds!="Neurons only"){colnames(dff)[5]<-"tissue"}
+      if(ds!="Neurons only"){
+        colnames(dff)[5]<-"tissue"
+        dff$tissue <- filter(L4.TPM.raw.scaled.long, gene_name=="nduo-6")$tissue
+        }
       flp.neuron.scaled <- rbind(flp.neuron.scaled, dff)
     }
     
@@ -701,7 +705,7 @@ server <- function(input, output) {
     })
   })
   
-  ### From file
+  #~ From file ----
   
   observeEvent(input$PlotHeatmapFromFile, {
     cat("--> heatmap PlotHeatmapFromFile\n")
