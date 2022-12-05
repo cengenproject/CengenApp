@@ -648,7 +648,7 @@ server <- function(input, output) {
       fnh <-
         function() {
           withProgress(message = "Generating heatmap Plot...", value = 0, {
-            grid::grid.draw(pg)      })
+            pg      })
         }
     } else {
       
@@ -676,8 +676,8 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 15*length(unique(g$data$gene_name)),
-            #width = 1889.76,
+            height = 1500 + 20*length(unique(g$data$gene_name)),
+            width = 5000,
             units = "px" ,
             limitsize = FALSE,
             device = "png"
