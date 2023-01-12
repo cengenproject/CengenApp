@@ -45,7 +45,7 @@ server <- function(input, output) {
               rownames = FALSE,
               style = 'jQueryUI',
               class = 'cell-border stripe'
-            ) %>% formatStyle(c(1:2), color = "black")
+            ) %>% formatStyle(c(1:2), color = "black", background = 'white')
           })
         
         output$get_download_gene <- renderUI({   
@@ -153,7 +153,7 @@ server <- function(input, output) {
             rownames = FALSE,
             style = 'jQueryUI',
             class = 'cell-border stripe'
-          ) %>% formatStyle(c(1:2), color = "black")
+          ) %>% formatStyle(c(1:2), color = "black", backgroundColor = 'white')
         })
       
       output$get_download_cell <- renderUI({   
@@ -279,7 +279,7 @@ server <- function(input, output) {
           rownames = FALSE,
           style = 'jQueryUI',
           class = 'cell-border stripe'
-        ) %>% formatStyle(c(1:6), color = "black")
+        ) %>% formatStyle(c(1:6), color = "black", backgroundColor = 'white')
       })
     output$NoExpressed <-
       DT::renderDataTable({
@@ -289,7 +289,7 @@ server <- function(input, output) {
           rownames = FALSE,
           style = 'jQueryUI',
           class = 'cell-border stripe'
-        ) %>% formatStyle(c(1:6), color = "black")
+        ) %>% formatStyle(c(1:6), color = "black", backgroundColor = 'white')
       })
     output$Result <-
       DT::renderDataTable({
@@ -299,7 +299,7 @@ server <- function(input, output) {
           rownames = FALSE,
           style = 'jQueryUI',
           class = 'cell-border stripe'
-        ) %>% formatStyle(c(1:2), color = "black")
+        ) %>% formatStyle(c(1:2), color = "black", backgroundColor = 'white')
       })
     
     output$downloadQuery <-
@@ -339,7 +339,7 @@ server <- function(input, output) {
         class = 'cell-border stripe',
         rownames = FALSE
       ) %>%
-        formatStyle(c(1:8), color = "black")
+        formatStyle(c(1:8), color = "black", backgroundColor = 'white')
     })
     
     t1 <-
@@ -367,7 +367,7 @@ server <- function(input, output) {
         style = 'jQueryUI',
         class = 'cell-border stripe',
         rownames = FALSE
-      ) %>% formatStyle(c(1:8), color = "black")
+      ) %>% formatStyle(c(1:8), color = "black", backgroundColor = 'white')
     })
     t2 <-
       filter(markersAllcells, cluster == input$Markers2, avg_log2FC > 0) %>% arrange(p_val_adj, desc(avg_log2FC))
@@ -503,7 +503,7 @@ server <- function(input, output) {
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
-          ) %>% formatStyle(c(1:9), color = "black")
+          ) %>% formatStyle(c(1:9), color = "black", backgroundColor = 'white')
         })
         output$downloadDEX <-
           downloadHandler(
