@@ -440,7 +440,8 @@ ui <- fluidPage(
         plotOutput("heatmap", width = "100%",hover = "plot_hover"),
         
         hr(),
-        downloadLink("downloadheatmap", "Download plot")
+        downloadLink("downloadheatmap", "Download plot", class = "btn btn-default"),
+        downloadLink("downloadheatmap_svg", "Download plot as SVG", class = "btn btn-default")
         
         
       )

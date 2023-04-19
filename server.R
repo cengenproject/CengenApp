@@ -688,6 +688,25 @@ server <- function(input, output) {
           )
         }
       )
+    
+    output$downloadheatmap_svg <-
+      downloadHandler(
+        filename = function() {
+          filename = paste("Heatmap.svg", sep = "")
+        },
+        content = function(file) {
+          ggsave(
+            fnh(),
+            file = file,
+            height = 1500 + 20*length(unique(g$data$gene_name)),
+            width = 5000,
+            units = "px" ,
+            limitsize = FALSE,
+            device = "svg"
+          )
+        }
+      )
+    
     l <- length(unique(g$data$gene_name))
     output$heatmap <- renderPlot(g, height = ifelse(l>40, 10*l, "auto"))
     
@@ -851,6 +870,24 @@ server <- function(input, output) {
             units = "px",
             limitsize = FALSE,
             device = "png"
+          )
+        }
+      )
+    
+    output$downloadheatmap_svg <-
+      downloadHandler(
+        filename = function() {
+          filename = paste("Heatmap.svg", sep = "")
+        },
+        content = function(file) {
+          ggsave(
+            fnh(),
+            file = file,
+            height = 1500 + 20*length(unique(g$data$gene_name)),
+            width = 5000,
+            units = "px" ,
+            limitsize = FALSE,
+            device = "svg"
           )
         }
       )
