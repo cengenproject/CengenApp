@@ -16,6 +16,7 @@ library(ggridges)
 library(cowplot)
 library(shinybusy)
 library(plotly)
+library(svglite)
 
 library(expss)
 library(xlsx)
