@@ -671,6 +671,8 @@ server <- function(input, output) {
         }
     }
     
+    l <- length(unique(g$data$gene_name))
+    
     output$downloadheatmap <-
       downloadHandler(
         filename = function() {
@@ -680,7 +682,7 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 1500 + 20*length(unique(g$data$gene_name)),
+            height = 1500 + 20*l,
             width = 5000,
             units = "px" ,
             limitsize = FALSE,
@@ -698,7 +700,7 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 1500 + 20*length(unique(g$data$gene_name)),
+            height = 1500 + 20*l,
             width = 5000,
             units = "px" ,
             limitsize = FALSE,
@@ -707,8 +709,7 @@ server <- function(input, output) {
         }
       )
     
-    l <- length(unique(g$data$gene_name))
-    output$heatmap <- renderPlot(g, height = ifelse(l>40, 10*l, "auto"))
+    output$heatmap <- renderPlot(g, height = 250 + 10*l)
     
     output$dynamic <- renderUI({
       #req(input$plot_hover)
@@ -856,6 +857,8 @@ server <- function(input, output) {
         }
     }
     
+    l <- length(unique(g$data$gene_name))
+    
     output$downloadheatmap <-
       downloadHandler(
         filename = function() {
@@ -865,7 +868,7 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 1500 + 20*length(unique(g$data$gene_name)),
+            height = 1500 + 20*l,
             width = 5000,
             units = "px",
             limitsize = FALSE,
@@ -883,7 +886,7 @@ server <- function(input, output) {
           ggsave(
             fnh(),
             file = file,
-            height = 1500 + 20*length(unique(g$data$gene_name)),
+            height = 1500 + 20*l,
             width = 5000,
             units = "px" ,
             limitsize = FALSE,
@@ -892,8 +895,7 @@ server <- function(input, output) {
         }
       )
     
-    l <- length(unique(g$data$gene_name))
-    output$heatmap <- renderPlot(g, height = ifelse(l>40, 10*l, "auto"))
+    output$heatmap <- renderPlot(g, height = 250 + 10*l)
     
     output$dynamic <- renderUI({
       #req(input$plot_hover)
