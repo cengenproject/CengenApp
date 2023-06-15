@@ -399,13 +399,20 @@ ui <- fluidPage(
           width = "500px",
           height = "100px"
         ),
-        
-        selectInput(
-          inputId = "dataset_heatmap",
-          label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
-          choices = c("Neurons only", "All cell types")
-        ),    
-        
+        fluidRow(
+          column(width = 3,
+                 selectInput(
+                   inputId = "dataset_heatmap",
+                   label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
+                   choices = c("Neurons only", "All cell types")
+                 )
+          ),
+          column(width = 1, offset = -10,
+                 checkboxInput(inputId = "reorder_rows",
+                               label = "Reorder rows",
+                               value = TRUE),
+          )
+        ),
         
         actionButton(
           "PlotHeatmapFromList","Plot heatmap from list",

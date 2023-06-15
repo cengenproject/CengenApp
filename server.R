@@ -585,17 +585,21 @@ server <- function(input, output) {
       missing = mis_all
     }
     
-    head(heatmapdata)
-    print(ds)
     
     flp.neuron.scaled <- heatmapdata[which(heatmapdata$gene_name %in% ss),]
     flp.ids <- as.character(vlookup(unique(flp.neuron.scaled$gene_name), gene_list, result_column = 1, lookup_column = 2))
     flp.expr <- L4.TPM[flp.ids,, drop=FALSE]
-    if ( nrow(flp.expr) >1 ) {
+    
+    # order
+    if ( nrow(flp.expr) > 1 && input$reorder_rows ) {
       flp.neuron.order <- pheatmap(flp.expr, scale = "row")
       flp.neuron.order <- flp.neuron.order[["tree_row"]]$order
       flp.neuron.order <- flp.ids[flp.neuron.order]
-    } else {
+      
+    } else if(nrow(flp.expr) > 1 && ! input$reorder_rows){
+      flp.neuron.order <- as.character(vlookup(unique(ss), gene_list, result_column = 1, lookup_column = 2))
+      
+    } else{
       flp.neuron.order <- flp.ids[1]
     }
     flp.neuron.order <- as.character(vlookup(flp.neuron.order, gene_list))
@@ -777,13 +781,20 @@ server <- function(input, output) {
     flp.neuron.scaled <- heatmapdata[which(heatmapdata$gene_name %in% ss),]
     flp.ids <- as.character(vlookup(unique(flp.neuron.scaled$gene_name), gene_list, result_column = 1, lookup_column = 2))
     flp.expr <- L4.TPM[flp.ids,, drop=FALSE]
-    if ( nrow(flp.expr) >1 ) {
+    
+    # order
+    if ( nrow(flp.expr) > 1 && input$reorder_rows ) {
       flp.neuron.order <- pheatmap(flp.expr, scale = "row")
       flp.neuron.order <- flp.neuron.order[["tree_row"]]$order
       flp.neuron.order <- flp.ids[flp.neuron.order]
-    } else {
+      
+    } else if(nrow(flp.expr) > 1 && ! input$reorder_rows){
+      flp.neuron.order <- as.character(vlookup(unique(ss), gene_list, result_column = 1, lookup_column = 2))
+      
+    } else{
       flp.neuron.order <- flp.ids[1]
     }
+    
     flp.neuron.order <- as.character(vlookup(flp.neuron.order, gene_list))
     flp.neuron.scaled$gene_name <- factor(flp.neuron.scaled$gene_name, levels = c(rev(flp.neuron.order), missing))
     #flp.neuron.scaled$gene_name <- fct_rev(flp.neuron.scaled$gene_name)
