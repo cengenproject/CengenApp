@@ -215,17 +215,15 @@ server <- function(input, output) {
       output$TGeneBatch <-
         downloadHandler(
           filename = function() {
-            paste(
+            paste0(
               "GenesExpressing-BATCH",
               "-thrs",
               input$Tgene_cut_batch,
-              ".xlsx",
-              sep = ""
+              ".csv"
             )
           },
           content = function(file) {
-            write.xlsx(tb, file, sheetName = "Sheet1", 
-                       col.names = TRUE, row.names = TRUE, append = FALSE)
+            write.csv(tb, file)
           }
         )
       

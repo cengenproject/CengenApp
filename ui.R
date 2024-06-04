@@ -19,7 +19,6 @@ library(plotly)
 library(svglite)
 
 library(expss)
-library(xlsx)
 
 library(BiocManager)
 library(edgeR)
