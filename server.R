@@ -107,17 +107,14 @@ server <- function(input, output) {
     }
     withProgress(message = "Obtaining information...", value = 0, {
       if (var %in% dplyr::filter(th, threshold == input$Tgene_cut)$gene_name) {
-        t3 <-
-          sort(
-            filter(
-              th,
-              gene_name == var,
-              threshold == input$Tgene_cut
-            )[, columns],
-            decreasing = TRUE
-          )
+        t3 <- th[th$gene_name == var & th$threshold == input$Tgene_cut,
+                 columns]
+        t3 <- as.numeric(t3) |> setNames(colnames(t3))
+        
+        t3 <- sort(t3, decreasing = TRUE)
         t3 <- data.frame(CellType = names(t3), expression = as.numeric(t3))
         t3 <- dplyr::filter(t3, expression > 0)
+        
         if (nrow(t3) > 0) {
           t3[, 2] <-
             as.numeric(formatC(t3[, 2], digits = 3, format = "f") %>% gsub(" ", "", .))
@@ -498,8 +495,8 @@ server <- function(input, output) {
       if (nrow(tableDEX) > 0) {
         output$MarkTable_Batch <- DT::renderDataTable({
           DT::datatable(
-            tableDEX %>% head(input$topM2),
-            options = list(pageLength = input$topM2),
+            tableDEX %>% head( as.numeric(input$topM2) ),
+            options = list( pageLength = as.numeric(input$topM2) ),
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
