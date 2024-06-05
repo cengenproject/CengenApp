@@ -641,20 +641,34 @@ server <- function(input, output) {
       
     }
     
+    # final plotting order
+    ordered_ss_known <- c(
+      rev(ordered_ss_known),
+      input_known_but_no_expression
+    )
+    
+    
+    
     #~~ Prepare dataset for plotting ----
-    heatmapdata <- heatmapdata[heatmapdata$gene_name %in% ordered_ss_known, ]
+    
     
     if(length(input_known_but_no_expression) > 0){
       
+      cell_types <- heatmapdata$cell.type[heatmapdata$gene_name == "nduo-6"]
+      
       fake_heatmap_data <- expand.grid(
         gene_name=input_known_but_no_expression,
-        cell.type= cc,
+        cell.type= cell_types,
         scaled.expr=0,
-        prop=0,
-        Modality="NA"
+        prop=0
       )
       
-      if(ds != "Neurons only"){
+      if(ds == "Neurons only"){
+        
+        fake_heatmap_data$Modality <- "NA"
+        
+      } else{
+        
         tissues <- heatmapdata$tissue[heatmapdata$gene_name == "nduo-6"]
         fake_heatmap_data$tissue <- tissues
       }
@@ -662,11 +676,11 @@ server <- function(input, output) {
       heatmapdata <- rbind(heatmapdata, fake_heatmap_data)
     }
     
+    heatmapdata <- heatmapdata[heatmapdata$gene_name %in% ordered_ss_known, ]
+    
+    
     heatmapdata$gene_name <- factor(heatmapdata$gene_name,
-                                    levels = c(
-                                      rev(ordered_ss_known),
-                                      input_known_but_no_expression
-                                    ))
+                                    levels = ordered_ss_known)
     
     
     
