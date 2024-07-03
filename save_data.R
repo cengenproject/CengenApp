@@ -24,6 +24,15 @@ load("Dataset_6July_2021.rda")
 all_cell_types <- sort(unique(allCells$Neuron.type))
 all_neuron_types <- colnames(L4.TPM.medium)
 
+
+# correct genelist (WBGene00007396 is as tiar-3 in `med.scaled.long` and `gene.list` and as rnp-9 in `L4.TPM.raw.scaled.long`)
+L4.TPM.raw.scaled.long <- qs::qread("data/L4.TPM.raw.scaled.long.qs.bak")
+levels(L4.TPM.raw.scaled.long$gene_name)[levels(L4.TPM.raw.scaled.long$gene_name) == "rnp-9"] <- "tiar-3"
+levels(L4.TPM.raw.scaled.long$gene_name) <- gsub("rnp-9","tiar-3", levels(L4.TPM.raw.scaled.long$gene_name))
+
+# qs::qsave(L4.TPM.raw.scaled.long, "data/L4.TPM.raw.scaled.long.qs")
+
+
 # For sc Wilcoxon tests
 allCells.data <- allCells.data <- GetAssayData(object = allCells[["SCT"]],
                                                slot = "data")
