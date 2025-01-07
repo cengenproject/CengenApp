@@ -33,6 +33,45 @@ levels(L4.TPM.raw.scaled.long$gene_name) <- gsub("rnp-9","tiar-3", levels(L4.TPM
 # qs::qsave(L4.TPM.raw.scaled.long, "data/L4.TPM.raw.scaled.long.qs")
 
 
+
+# more incompatibilities: 17 genes with name in L4.TPM.raw.scaled.long but not gene_list nor med.scaled.long
+
+# file.rename("data/gene_list.qs", "data/gene_list.qs.bak")
+# gene_list <- qs::qread("data/gene_list.qs.bak")
+# 
+# incorrect_names <- setdiff(L4.TPM.raw.scaled.long$gene_name, gene_list$gene_name)
+# incorrect_gids <- wbData::wb_clean_gene_names(incorrect_names)
+# 
+# 
+# gene_list$gene_name[match(incorrect_gids, gene_list$gene_id)] <- incorrect_names
+# qs::qsave(gene_list, "data/gene_list.qs")
+
+# and 12 (of these genes) not in med.scaled.long
+# file.rename("data/med.scaled.long.qs", "data/med.scaled.long.qs.bak")
+# 
+# med.scaled.long <- qs::qread("data/med.scaled.long.qs.bak")
+# gene_list <- qs::qread("data/gene_list.qs")
+# 
+# incorrect_names <- setdiff(med.scaled.long$gene_name |> unique(), gene_list$gene_name)
+# incorrect_gids <- wbData::wb_clean_gene_names(incorrect_names)
+# correcting_df <- data.frame(
+#   incorrect_names,
+#   incorrect_gids,
+#   corrected_names = gene_list$gene_name[match(incorrect_gids, gene_list$gene_id)]
+# )
+# 
+# levels(med.scaled.long$gene_name)[levels(med.scaled.long$gene_name) %in% incorrect_names] <-
+#   correcting_df$corrected_names[
+#     match(levels(med.scaled.long$gene_name)[levels(med.scaled.long$gene_name) %in% incorrect_names],
+#           correcting_df$incorrect_names)
+#   ]
+# 
+# qs::qsave(med.scaled.long, "data/med.scaled.long.qs")
+
+
+
+
+
 # For sc Wilcoxon tests
 allCells.data <- allCells.data <- GetAssayData(object = allCells[["SCT"]],
                                                slot = "data")
@@ -64,9 +103,9 @@ markersAllcells$avg_log2FC <-
 
 # For pseudobulk tests
 pseudobulk_matrix <- AggregateExpression(allCells,
-                                  assays = "RNA",
-                                  slot = "counts",
-                                  group.by = c("Neuron.type", "SampleID"))[["RNA"]]
+                                         assays = "RNA",
+                                         slot = "counts",
+                                         group.by = c("Neuron.type", "SampleID"))[["RNA"]]
 
 pseudosample_counts <- allCells@meta.data |>
   count(Neuron.type, SampleID) |>
@@ -90,8 +129,8 @@ pseudobulk_metadata <- pseudosample_counts |>
 # Precompute edgeR object
 library(edgeR)
 edger_precomputed <- DGEList(counts=pseudobulk_matrix,
-             samples = pseudobulk_metadata,
-             group = pseudobulk_metadata$cell_type)
+                             samples = pseudobulk_metadata,
+                             group = pseudobulk_metadata$cell_type)
 
 
 keep <- filterByExpr(edger_precomputed)
