@@ -3,7 +3,34 @@
 
 
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  
+  
+  observe({
+    query_GET <- getQueryString()
+    
+    if(length(query_GET) > 0 &&
+       identical(names(query_GET), "celltype") &&
+         length(query_GET) == 1L &&
+         query_GET %in% all_cell_types){
+      
+      message("Switching to Enriched tab")
+      
+      
+      updateSelectInput(inputId = "Markers2",
+                        selected = query_GET)
+      
+      updateTabsetPanel(inputId = "tabs",
+                        selected = "Enriched Genes by cell type")
+      
+      
+    }
+    
+  })
+  
+  
+  
   
   
   ### Gene expression by cell type Panel ----
