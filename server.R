@@ -632,14 +632,14 @@ server <- function(input, output) {
   ### Heatmaps of gene expression Panel ----
   
   #~ From list ----
-  observeEvent(input$PlotHeatmapFromList, {
+  observeEvent(input$HMbutton_from_list, {
     
     cat("--> heatmap PlotHeatmapFromList\n")
     
     
     
     #~~ Load dataset ----
-    ds <- input$dataset_heatmap
+    ds <- input$HMdataset
     
     if(ds == "Neurons only"){
       
@@ -658,7 +658,7 @@ server <- function(input, output) {
     
     
     #~~ Process gene input list ----
-    ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")[[1]] |>
+    ss <- strsplit(as.character(input$HMgenelist), "\n| |\\,|\t")[[1]] |>
       setdiff("") |>
       unique()
     
@@ -704,8 +704,8 @@ server <- function(input, output) {
               input_known_but_no_expression)
     }
     
-    #~~ Reorder ----
-    if ( length(ss_known) <= 1 || !input$reorder_rows ){
+    #~~ Reorder genes ----
+    if ( length(ss_known) <= 1 || !input$HMreorder_rows ){
       ordered_ss_known <- ss_known
       
     } else {
@@ -894,13 +894,11 @@ server <- function(input, output) {
     output$heatmap <- renderPlot(g, height = 250 + 10*l)
     
     output$dynamic <- renderUI({
-      #req(input$plot_hover)
       verbatimTextOutput("vals", placeholder = TRUE)
     })
     
     output$vals <- renderPrint({
-      hover <- input$plot_hover 
-      #print(input$plot_hover) # list
+      hover <- input$plot_hover
       y <- nearPoints(heatmapdata, input$plot_hover)
       req(nrow(y) != 0)
       y
@@ -909,18 +907,17 @@ server <- function(input, output) {
   
   #~ From file ----
   
-  observeEvent(input$PlotHeatmapFromFile, {
+  observeEvent(input$HMbutton_from_file, {
     cat("--> heatmap PlotHeatmapFromFile\n")
     
     load_as_needed("med.scaled.long")
     load_as_needed("L4.TPM.raw.scaled.long")
     
-    ds <- input$dataset_heatmap
-    inFile <- input$file1
+    ds <- input$HMdataset
+    inFile <- input$HMfile_input
     ss<-read.table(inFile$datapath, header=FALSE)$V1
     
-    # ss <- strsplit(as.character(input$genelist), "\n| |\\,|\t")
-    # ss <- as.data.frame(ss)[,1]
+    
     star <- grep("\\*", ss)
     
     families <- c()
@@ -961,12 +958,12 @@ server <- function(input, output) {
     flp.expr <- L4.TPM[flp.ids,, drop=FALSE]
     
     # order
-    if ( nrow(flp.expr) > 1 && input$reorder_rows ) {
+    if ( nrow(flp.expr) > 1 && input$HMreorder_rows ) {
       flp.neuron.order <- pheatmap(flp.expr, scale = "row")
       flp.neuron.order <- flp.neuron.order[["tree_row"]]$order
       flp.neuron.order <- flp.ids[flp.neuron.order]
       
-    } else if(nrow(flp.expr) > 1 && ! input$reorder_rows){
+    } else if(nrow(flp.expr) > 1 && ! input$HMreorder_rows){
       flp.neuron.order <- as.character(vlookup(unique(ss), gene_list, result_column = 1, lookup_column = 2))
       
     } else{
@@ -1087,13 +1084,11 @@ server <- function(input, output) {
     output$heatmap <- renderPlot(g, height = 250 + 10*l)
     
     output$dynamic <- renderUI({
-      #req(input$plot_hover)
       verbatimTextOutput("vals", placeholder = TRUE)
     })
     
     output$vals <- renderPrint({
-      hover <- input$plot_hover 
-      #print(input$plot_hover) # list
+      hover <- input$plot_hover
       y <- nearPoints(flp.neuron.scaled, input$plot_hover)
       req(nrow(y) != 0)
       y

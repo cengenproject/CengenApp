@@ -423,7 +423,7 @@ ui <- fluidPage(
         ),
         h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
         textAreaInput(
-          inputId = "genelist",
+          inputId = "HMgenelist",
           label = "Introduce a list of genes",
           value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
           width = "500px",
@@ -432,27 +432,27 @@ ui <- fluidPage(
         fluidRow(
           column(width = 3,
                  selectInput(
-                   inputId = "dataset_heatmap",
+                   inputId = "HMdataset",
                    label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
                    choices = c("Neurons only", "All cell types")
                  )
           ),
           column(width = 1, offset = -10,
-                 checkboxInput(inputId = "reorder_rows",
+                 checkboxInput(inputId = "HMreorder_rows",
                                label = "Reorder rows",
                                value = TRUE),
           )
         ),
         
         actionButton(
-          "PlotHeatmapFromList","Plot heatmap from list",
+          "HMbutton_from_list","Plot heatmap from list",
           icon = icon("hand-point-right")
           
           
         ),
         hr(),
         fluidRow(
-          column(3,fileInput("file1", NULL,
+          column(3,fileInput("HMfile_input", NULL,
                              accept = c(
                                "text/csv",
                                "text/comma-separated-values,text/plain",
@@ -460,7 +460,7 @@ ui <- fluidPage(
           )),
           #column(3,actionButton("resetFile", "Clear uploaded file")),
           column(3,   actionButton(
-            "PlotHeatmapFromFile",
+            "HMbutton_from_file",
             "Plot heatmap from file",
             icon = icon("hand-point-right")
           ))
