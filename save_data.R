@@ -35,7 +35,14 @@
 #   qs::qsave("data/2025-03-21/med.scaled.long.qs")
 
 
-
+# file.rename("data/2025-03-21/L4.TPM.raw.scaled.long.qs",
+#             "data/2025-03-21/L4.TPM.raw.scaled.long.qs.bak")
+# 
+# L4.TPM.raw.scaled.long <- qs::qread("data/2025-03-21/L4.TPM.raw.scaled.long.qs.bak")
+# 
+# L4.TPM.raw.scaled.long |>
+#   select(-id, -TPM) |>
+#   qs::qsave("data/2025-03-21/L4.TPM.raw.scaled.long.qs")
 
 
 
