@@ -12,7 +12,7 @@
 load_as_needed <- function(dataset){
   if(!exists(dataset)){
     assign(dataset,
-           qs::qread(paste0("data/", dataset, ".qs")),
+           qs::qread(paste0("data/2025-03-21/", dataset, ".qs")),
            envir = .GlobalEnv)
   }
 }
@@ -71,9 +71,9 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   load_as_needed("allCells.data")
   load_as_needed("allCells.metadata")
   
-  cells.1 <- allCells.metadata$Neuron.type %in% ident.1
+  cells.1 <- allCells.metadata$Cell.type %in% ident.1
   
-  cells.2 <- allCells.metadata$Neuron.type %in% ident.2
+  cells.2 <- allCells.metadata$Cell.type %in% ident.2
   
   
   

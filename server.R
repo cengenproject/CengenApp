@@ -29,7 +29,7 @@ server <- function(input, output) {
       
       if (input$Tcell_name %in% colnames(th)) {
         t4 <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, input$Tcell_name)
-        t4d <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, X, input$Tcell_name)
+        t4d <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, id, input$Tcell_name)
         t4 <- t4[rev(order(t4[, 2])), ]
         t4d <- t4d[rev(order(t4d[, 3])), ]
         t4[, 2] <- as.numeric(formatC(t4[, 2], digits = 3, format = "f") %>% gsub(" ", "", .))
@@ -193,7 +193,7 @@ server <- function(input, output) {
       families1 <- c(families1, grep( gsub("\\*", "", gns1[i]), gene_list$gene_name, value = TRUE) )
     }
     
-    gns <- unique(c(families1, gns1, filter(gene_list, gene_id %in% gns1 | seqnames %in% gns1)$gene_name))
+    gns <- unique(c(families1, gns1, filter(gene_list, gene_id %in% gns1 | seqname %in% gns1)$gene_name))
     
     if( input$Tgene_cut_batch == "All Cells Unfiltered" ) { 
       th = L4.all.TPM.raw_th
