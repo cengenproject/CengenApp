@@ -1,3 +1,31 @@
+
+# 2025-03-21 dataset ----
+
+
+# file.rename("data/2025-03-21/L4.all.TPM.raw_th.qs",
+#             "data/2025-03-21/L4.all.TPM.raw_th.qs.bak")
+# 
+# L4.all.TPM.raw_th <- qs::qread("data/2025-03-21/L4.all.TPM.raw_th.qs.bak")
+# 
+# L4.all.TPM.raw_th |>
+#   mutate(threshold = if_else(threshold == "Unfiltered",
+#                              "All Cells Unfiltered",
+#                              threshold)) |>
+#   qs::qsave("data/2025-03-21/L4.all.TPM.raw_th.qs")
+
+
+# file.rename("data/2025-03-21/gene_list.qs",
+#             "data/2025-03-21/gene_list.qs.bak")
+# 
+# gene_list <- qs::qread("data/2025-03-21/gene_list.qs.bak")
+# 
+# gene_list |>
+#   rename(seqnames = seqname) |>
+#   qs::qsave("data/2025-03-21/gene_list.qs")
+
+
+
+
 # # # Load the full datasets in the Shiny app, and save it without the Seurat objects.
 # # Compute some other objects which might be useful.
 # 
