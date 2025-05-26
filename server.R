@@ -645,14 +645,14 @@ server <- function(input, output) {
       
       load_as_needed("med.scaled.long")
       
-      heatmapdata=med.scaled.long
+      heatmapdata = med.scaled.long
       
       
     } else {
       
       load_as_needed("L4.TPM.raw.scaled.long")
       
-      heatmapdata=L4.TPM.raw.scaled.long
+      heatmapdata = L4.TPM.raw.scaled.long
       
     }
     
@@ -759,11 +759,7 @@ server <- function(input, output) {
         prop=0
       )
       
-      if(ds == "Neurons only"){
-        
-        # fake_heatmap_data$Modality <- "NA"
-        
-      } else{
+      if(ds == "All cell types"){
         
         tissues_table <- heatmapdata[heatmapdata$gene_name == "nduo-6", c("cell.type", "tissue")]
         fake_heatmap_data <- merge(fake_heatmap_data, tissues_table, by = "cell.type")
