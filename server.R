@@ -463,10 +463,10 @@ server <- function(input, output) {
           c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test. This test may display inflated power, as it considers each cell as an individual replicate.
           Before testing, the genes are filtered to only consider those displaying enough expression in one of the groups, 
           and a large enough fold change between groups.",
-          "Columns:",
-          "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
-          "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
-          "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
+            "Columns:",
+            "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
+            "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
+            "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
         } else if(input$test == "Pseudobulk: Wilcoxon"){
           "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
         Only genes which displayed high enough expression in enough cell types are considered.<br/>
@@ -534,7 +534,7 @@ server <- function(input, output) {
   
   
   ### Heatmaps of gene expression Panel ----
-    
+  
   #~ From list ----
   observeEvent(input$PlotHeatmapFromList, {
     
@@ -571,10 +571,10 @@ server <- function(input, output) {
     input_has_star <- grepl("\\*", ss)
     
     expanded_stars <- lapply(which(input_has_star),
-           \(.i){
-             pattern <- paste0("^", gsub("\\*", ".+", ss[[.i]]), "$")
-             grep(pattern, gene_list$gene_name, value = TRUE)
-           }) |>
+                             \(.i){
+                               pattern <- paste0("^", gsub("\\*", ".+", ss[[.i]]), "$")
+                               grep(pattern, gene_list$gene_name, value = TRUE)
+                             }) |>
       unlist()
     
     ss <- ss[!input_has_star]
@@ -688,7 +688,7 @@ server <- function(input, output) {
     #~~ Plot ----
     
     g_base <- ggplot(heatmapdata,
-                aes(y = gene_name, x = cell.type)) +
+                     aes(y = gene_name, x = cell.type)) +
       geom_point(aes(color = scaled.expr, size = prop)) +
       scale_color_gradientn("Scaled TPM", colors = c("orange", "maroon", "navy")) +
       scale_size_continuous(name = "Proportion", limit = c(0.5, 100), range = c(0,5)) +
@@ -847,15 +847,15 @@ server <- function(input, output) {
       heatmapdata=med.scaled.long
       cc = colnames(ths)[-c(1,130,131)]
       missing = mis
-      } else {
-        
-        load_as_needed("L4.all.TPM.raw")
-        
-        L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
-        heatmapdata=L4.TPM.raw.scaled.long
-        cc=colnames(L4.all.TPM.raw)
-        missing = mis_all
-      }
+    } else {
+      
+      load_as_needed("L4.all.TPM.raw")
+      
+      L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
+      heatmapdata=L4.TPM.raw.scaled.long
+      cc=colnames(L4.all.TPM.raw)
+      missing = mis_all
+    }
     
     head(heatmapdata)
     print(ds)
