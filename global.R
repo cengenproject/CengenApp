@@ -19,7 +19,7 @@ unreliable_gene_ids <- c(
 )
 
 ordered_tissues <- c(
-  "Neuron", "Glia", "Epidermis", "Muscle_mesoderm", "Pharynx",
+  "Neuron", "Neuronal_progenitors", "Glia", "Epidermis", "Muscle_mesoderm", "Pharynx",
   "Excretory","Intestine","Rectal_cells", "Reproductive",
   "Unknown", "Unannotated"
 )
