@@ -17,7 +17,7 @@ load_as_needed <- function(dataset){
   }
 }
 
-# load("Dataset_6July_2021_noSeurat2.rda")
+
 
 # load global data
 load_as_needed("gene_list")
