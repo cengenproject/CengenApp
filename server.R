@@ -699,12 +699,12 @@ server <- function(input, output) {
     message("Heatmap from list, ", length(ss_known)," genes: ", paste(ss_known, collapse = ","))
     if(length(input_has_no_expression_data) > 0){
       message(length(input_name_unknown)," genes unknown: ",
-              input_name_unknown)
+              paste(input_name_unknown, collapse = ","))
       message(length(input_known_but_no_expression)," genes known but no data: ",
-              input_known_but_no_expression)
+              paste(input_known_but_no_expression, collapse = ","))
     }
     
-    #~~ Reorder genes ----
+    #~~ Determine gene order ----
     if ( length(ss_known) <= 1 || !input$HMreorder_rows ){
       ordered_ss_known <- ss_known
       
@@ -761,7 +761,7 @@ server <- function(input, output) {
       
       if(ds == "Neurons only"){
         
-        fake_heatmap_data$Modality <- "NA"
+        # fake_heatmap_data$Modality <- "NA"
         
       } else{
         
@@ -772,12 +772,24 @@ server <- function(input, output) {
       heatmapdata <- rbind(heatmapdata, fake_heatmap_data)
     }
     
-    heatmapdata <- heatmapdata[heatmapdata$gene_name %in% ordered_ss_known, ]
     
+    #~~ Order cells and genes ----
     
-    heatmapdata$gene_name <- factor(heatmapdata$gene_name,
-                                    levels = ordered_ss_known)
+    if(ds == "Neurons only"){
+      
+      heatmapdata$tissue <- "Neuron"
+      
+    }
     
+    heatmapdata <- heatmapdata |>
+      filter(gene_name %in% ordered_ss_known) |>
+      mutate(gene_name = factor(gene_name,
+                                levels = ordered_ss_known),
+             is_pharyngeal = cell.type %in% pharyngeal_neurons,
+             tissue = factor(tissue,
+                             levels = ordered_tissues)) |>
+      arrange(tissue, is_pharyngeal) |>
+      mutate(cell.type = fct_inorder(cell.type))
     
     
     

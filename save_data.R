@@ -25,6 +25,20 @@
 
 
 
+# file.rename("data/2025-03-21/med.scaled.long.qs",
+#             "data/2025-03-21/med.scaled.long.qs.bak")
+# 
+# med.scaled.long <- qs::qread("data/2025-03-21/med.scaled.long.qs.bak")
+# 
+# med.scaled.long |>
+#   select(-id, -TPM) |>
+#   qs::qsave("data/2025-03-21/med.scaled.long.qs")
+
+
+
+
+
+
 
 # # # Load the full datasets in the Shiny app, and save it without the Seurat objects.
 # # Compute some other objects which might be useful.

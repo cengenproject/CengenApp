@@ -17,3 +17,15 @@ unreliable_gene_ids <- c(
   "WBGene00016259",
   "WBGene00023407"
 )
+
+ordered_tissues <- c(
+  "Neuron", "Glia", "Epidermis", "Muscle_mesoderm", "Pharynx",
+  "Excretory","Intestine","Rectal_cells", "Reproductive",
+  "Unknown", "Unannotated"
+)
+
+pharyngeal_neurons <- c(
+  paste0("I", 1:6),
+  paste0("M", 1:5 |> c("C","I")),
+  "NSM"
+)
