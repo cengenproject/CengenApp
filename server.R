@@ -5,17 +5,25 @@
 
 server <- function(input, output) {
   
+  
   ### Gene expression by cell type Panel ----
   
+  #~ Tcell ----
   observeEvent(input$TCell, {
+    
     cat("--> thresholded gene expression TCell\n")
+    
     withProgress(message = "Obtaining information...", value = 0, {
       
-      load_as_needed("L4.all.TPM.raw_th")
-      load_as_needed("ths")
-      
-      
-      if( input$Tcell_cut == "All Cells Unfiltered" ) { th = L4.all.TPM.raw_th } else { th = ths }
+      if( input$Tcell_cut == "All Cells Unfiltered" ) {
+        
+        load_as_needed("L4.all.TPM.raw_th")
+        th = L4.all.TPM.raw_th
+        
+      } else {
+        load_as_needed("ths")
+        th = ths
+      }
       
       output$Error1 <-
         isolate(renderText({
@@ -27,20 +35,26 @@ server <- function(input, output) {
           ))
         }))
       
+      
       if (input$Tcell_name %in% colnames(th)) {
-        t4 <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, input$Tcell_name)
-        t4d <- dplyr::filter(th, threshold == input$Tcell_cut) %>% dplyr::select(gene_name, id, input$Tcell_name)
-        t4 <- t4[rev(order(t4[, 2])), ]
-        t4d <- t4d[rev(order(t4d[, 3])), ]
-        t4[, 2] <- as.numeric(formatC(t4[, 2], digits = 3, format = "f") %>% gsub(" ", "", .))
-        colnames(t4) <- c("Gene name", "Expression level")
-        t4d[, 3] <- as.numeric(formatC(t4d[, 3], digits = 3, format = "f") %>% gsub(" ", "", .))
-        colnames(t4d) <- c("Gene name", "Gene ID", "Expression level")
+        
+        t4 <- th |>
+          dplyr::filter(threshold == input$Tcell_cut) |>
+          dplyr::select(`Gene name` = gene_name,
+                        `Gene ID` = id,
+                        `Expression level` = input$Tcell_name) |>
+          dplyr::arrange(desc( `Expression level` ),
+                         `Gene name`) |>
+          dplyr::mutate(`Expression level` = round(`Expression level`, digits = 3))
+        
+        t4_display <- t4 |>
+          dplyr::select(-`Gene ID`)
+        
         
         output$Tcell_name_table <-
           DT::renderDataTable({
             DT::datatable(
-              t4,
+              t4_display,
               options = list(pageLength = 10, autoWidth = TRUE),
               rownames = FALSE,
               style = 'jQueryUI',
@@ -66,20 +80,34 @@ server <- function(input, output) {
               )
             },
             content = function(file) {
-              write.csv(t4d , file, dec = ".", sep = "\t")
+              write.csv(t4 , file, dec = ".", sep = "\t")
             }
           )
         
-      } else { output$Tcell_name_table  <- NULL }
+      } else {
+        
+        print("Tcell_name not in colnames(th)")
+        
+        output$Tcell_name_table  <- NULL
+        
+        output$Error1 <- isolate(renderText({
+            shiny::validate(need(
+              input$Tcell_name %in% colnames(th),
+              message = paste0(
+                "WARNING: If you want to query non-neuronal cells select All Cells Unfiltered"
+              )
+            ))
+          }))
+      }
       
     })
   })
   
+  
+  #~ Tgene ----
   observeEvent(input$TGene, {
     cat("--> thresholded gene expression TGene\n")
     
-    load_as_needed("L4.all.TPM.raw_th")
-    load_as_needed("ths")
     
     g <- input$Tgene_name
     print(g)
@@ -98,17 +126,28 @@ server <- function(input, output) {
       var <- dplyr::filter(gene_list, seqnames == g)$gene_name
     }
     
-    if( input$Tgene_cut == "All Cells Unfiltered" ) { 
+    if( input$Tgene_cut == "All Cells Unfiltered" ) {
+      
+      load_as_needed("L4.all.TPM.raw_th")
       th = L4.all.TPM.raw_th
-      columns <- c(1:169)
-    } else { 
+      
+    } else {
+      
+      load_as_needed("ths")
       th = ths
-      columns <- c(2:129)
+      
     }
+    
+    
     withProgress(message = "Obtaining information...", value = 0, {
+      
       if (var %in% dplyr::filter(th, threshold == input$Tgene_cut)$gene_name) {
-        t3 <- th[th$gene_name == var & th$threshold == input$Tgene_cut,
-                 columns]
+        
+        t3 <- th |>
+          dplyr::filter(gene_name == var,
+                        threshold == input$Tgene_cut) |>
+          dplyr::select(-id, -threshold, -gene_name)
+        
         t3 <- as.numeric(t3) |> setNames(colnames(t3))
         
         t3 <- sort(t3, decreasing = TRUE)
@@ -120,6 +159,7 @@ server <- function(input, output) {
             as.numeric(formatC(t3[, 2], digits = 3, format = "f") %>% gsub(" ", "", .))
         }
         colnames(t3) <- c("Cell type", "Expression level")
+        
         output$text1 <-
           isolate(renderText({
             shiny::validate(need(
@@ -134,7 +174,7 @@ server <- function(input, output) {
         #output$text1 <- renderText({""})
       }
       else {
-        print("NO")
+        print("No gene left")
         t3 <- NULL
         output$text1 <-
           renderText({
@@ -177,11 +217,10 @@ server <- function(input, output) {
     })
   })
   
+  #~ Tgene_batch ----
   observeEvent( list(input$Tgene_name_batch, input$Tgene_cut_batch) , {
     cat("--> thresholded gene expression Tgene_name_batch/Tgene_cut_batch\n")
     
-    load_as_needed("L4.all.TPM.raw_th")
-    load_as_needed("ths")
     
     gns1 <- strsplit(as.character(input$Tgene_name_batch), "\n| |\\,|\t")
     gns1 <- as.data.frame(gns1)[,1]
@@ -193,24 +232,34 @@ server <- function(input, output) {
       families1 <- c(families1, grep( gsub("\\*", "", gns1[i]), gene_list$gene_name, value = TRUE) )
     }
     
-    gns <- unique(c(families1, gns1, filter(gene_list, gene_id %in% gns1 | seqname %in% gns1)$gene_name))
+    gns <- unique(c(families1, gns1, filter(gene_list, gene_id %in% gns1 | seqnames %in% gns1)$gene_name))
+    
     
     if( input$Tgene_cut_batch == "All Cells Unfiltered" ) { 
+      
+      load_as_needed("L4.all.TPM.raw_th")
       th = L4.all.TPM.raw_th
-      columns <- c(171, 170, 172, c(1:169) )
+      
     } else { 
+      
+      load_as_needed("ths")
       th = ths
-      columns <- c(1, 131, 130, c(2:129))    
+      
     }
     
     if (length(which(gns %in% unique(th$gene_name))) > 0) {
-      tb <-
-        dplyr::filter(th,
-                      gene_name %in% gns,
-                      threshold == input$Tgene_cut_batch)[, columns]
+      
+      
+      tb <- th |>
+        dplyr::filter(gene_name %in% gns,
+                      threshold == input$Tgene_cut_batch) |>
+        dplyr::relocate(gene_name, .before = 1) |>
+        dplyr::select(-id, -threshold)
+      
       output$textb <- renderText({""})
       head(tb)
       req(input$Tgene_name_batch)
+      
       
       output$TGeneBatch <-
         downloadHandler(
@@ -228,7 +277,7 @@ server <- function(input, output) {
         )
       
     } else {
-      print("NO")
+      print("No gene left")
       tb <- NULL
       output$textb <-
         renderText({
@@ -246,30 +295,63 @@ server <- function(input, output) {
     
     load_as_needed("pcttable")
     
-    s1 <- unlist(strsplit(as.character(input$String1), split = ","))
+    s1 <- unlist(strsplit(as.character(input$PCT_group1), split = ","))
     s1 <- gsub(" ", "", as.character(s1))
-    s2 <- unlist(strsplit(as.character(input$String2), split = ","))
+    s2 <- unlist(strsplit(as.character(input$PCT_group2), split = ","))
     s2 <- gsub(" ", "", as.character(s2))
-    expressed <- input$Expressed
-    not_expressed <- input$NonExpressed
     
-    print(expressed)
-    yes <-
-      filter(pcttable, id %in% s1, pct.exp >= as.numeric(expressed))
-    yes.genes <- names(which(table(yes$gene_name) == length(s1)))
-    no <-
-      filter(pcttable, id %in% s2, pct.exp < as.numeric(not_expressed))
-    no.genes <- names(which(table(no$gene_name) == length(s2)))
-    tt3 <- intersect(yes.genes, no.genes)
-    tt3t <- unique(filter(pcttable, gene_name %in% tt3)[, c(1, 5)])
-    tt1 <- filter(yes, gene_name %in% tt3)
-    tt2 <- filter(no, gene_name %in% tt3)
+    
+    expressed_thr <- as.numeric( input$PCT_expressed_threshold )
+    not_expressed_thr <- as.numeric( input$PCT_notExpressed_threshold )
+    
+    
+    
+    expr_in_grp1 <- pcttable |>
+      dplyr::filter(id %in% s1,
+                    pct.exp >= expressed_thr)
+    
+    genes_expr_in_grp1 <- names(which(table(expr_in_grp1$gene_name) == length(s1)))
+    
+    notexpr_in_grp2 <- pcttable |>
+      dplyr::filter(id %in% s2,
+                    pct.exp < not_expressed_thr)
+    
+    genes_notexpr_in_grp2 <- names(which(table(notexpr_in_grp2$gene_name) == length(s2)))
+    
+    
+    genes_res <- intersect(genes_expr_in_grp1, genes_notexpr_in_grp2)
+    
+    
+    res_table <- pcttable |>
+      dplyr::filter(gene_name %in% genes_res) |>
+      dplyr::select(`Gene Name` = gene_name,
+                    `Gene ID` = gene_id) |>
+      dplyr::distinct() |>
+      as.data.frame()
+    
+    
+    yes_display <- expr_in_grp1 |>
+      dplyr::mutate(pct.exp = round(pct.exp, 2),
+                    avg.exp = round(avg.exp, 2)) |>
+      dplyr::arrange(desc(pct.exp))
+    
+    
+    no_display <- notexpr_in_grp2 |>
+      dplyr::mutate(pct.exp = round(pct.exp, 2),
+                    avg.exp = round(avg.exp, 2)) |>
+      dplyr::arrange(desc(pct.exp))
+    
+    yes_download <- dplyr::filter(expr_in_grp1, gene_name %in% genes_res)
+    
+    no_download <- dplyr::filter(notexpr_in_grp2, gene_name %in% genes_res)
+    
+    
     
     
     output$YesExpressed <-
       DT::renderDataTable({
         DT::datatable(
-          yes,
+          yes_display,
           options = list(pageLength = 10, autoWidth = TRUE),
           rownames = FALSE,
           style = 'jQueryUI',
@@ -279,7 +361,7 @@ server <- function(input, output) {
     output$NoExpressed <-
       DT::renderDataTable({
         DT::datatable(
-          no,
+          no_display,
           options = list(pageLength = 10, autoWidth = TRUE),
           rownames = FALSE,
           style = 'jQueryUI',
@@ -289,7 +371,7 @@ server <- function(input, output) {
     output$Result <-
       DT::renderDataTable({
         DT::datatable(
-          as.data.frame(tt3t),
+          res_table,
           options = list(pageLength = 10, autoWidth = TRUE),
           rownames = FALSE,
           style = 'jQueryUI',
@@ -310,7 +392,7 @@ server <- function(input, output) {
           )
         },
         content = function(file) {
-          write.csv(rbind(tt1, tt2), file, sep = "\t")
+          write.csv(rbind(yes_download, no_download), file, sep = "\t")
         }
       )
     
@@ -454,11 +536,16 @@ server <- function(input, output) {
                  " replicates) to group 2 (",nb_sc_group_2," single cells in ",
                  nb_rep_group_2," replicates)")
         }, sep = "<br>")
-      } else{output$pseudobulk_metadata <- renderText({""}, sep = "<br>")}
+        
+      } else{
+        output$pseudobulk_metadata <- renderText({""}, sep = "<br>")
+      }
       
       
       output$text_error_dex <- renderText({""})
+      
       output$legend_de_columns <- renderText({
+        
         if(input$test == "Wilcoxon on single cells"){
           c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test. This test may display inflated power, as it considers each cell as an individual replicate.
           Before testing, the genes are filtered to only consider those displaying enough expression in one of the groups, 
@@ -467,22 +554,26 @@ server <- function(input, output) {
             "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
             "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
             "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
+          
         } else if(input$test == "Pseudobulk: Wilcoxon"){
-          "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
-        Only genes which displayed high enough expression in enough cell types are considered.<br/>
-        Columns:<br/>
-        mean_1 and mean_2: mean expression across samples for group 1 and 2.<br/>
-        log2FC: change in mean expression between group 1 and 2 (log fold change).<br/>
-        p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+          c(
+            "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
+        Only genes which displayed high enough expression in enough cell types are considered.",
+            "Columns:",
+            "mean_1 and mean_2: mean expression across samples for group 1 and 2.",
+            "log2FC: change in mean expression between group 1 and 2 (log fold change).",
+            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+          )
         } else if(input$test == "Pseudobulk: edgeR pairwise exact test"){
-          "Testing differential expression between cell types across samples (pseudobulk), using edgeR's exact test.
+          c(
+            "Testing differential expression between cell types across samples (pseudobulk), using edgeR's exact test.
         Only genes which displayed high enough expression in enough cell types are considered.
-        Note that the exact test only allows pairwise comparisons.
-        edgeR implements other tests (based on glm) which allow more complex comparisons but are impractical to run on a website.<br/>
-        Columns:<br/>
-        logFC: change in mean expression between group 1 and 2 (log fold change).<br/>
-        logCPM: mean expression of the gene across all groups (log of Count Per Million reads)<br/>
-        p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+        Note that the exact test only allows pairwise comparisons, edgeR implements other tests (based on glm) which allow more complex comparisons but are impractical to run on a website.",
+            "Columns:",
+            "logFC: change in mean expression between group 1 and 2 (log fold change).",
+            "logCPM: mean expression of the gene across all groups (log of Count Per Million reads)",
+            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+          )
         }
       }, sep = "<br>")
       
@@ -491,15 +582,19 @@ server <- function(input, output) {
       
       # Finalize output
       if (nrow(tableDEX) > 0) {
+        
         output$MarkTable_Batch <- DT::renderDataTable({
           DT::datatable(
-            tableDEX %>% head( as.numeric(input$topM2) ),
+            tableDEX |> head( as.numeric(input$topM2) ),
             options = list( pageLength = as.numeric(input$topM2) ),
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
-          ) %>% formatStyle(c(1:9), color = "black", backgroundColor = 'white')
+          ) |> formatStyle(c(1:8), color = "black", backgroundColor = 'white') |>
+            formatRound(columns = c('avg_logFC'), digits = 1) |>
+            formatSignif(columns = c('p_val', 'p_val_adj'), digits = 2)
         })
+        
         output$downloadDEX <-
           downloadHandler(
             filename = function() {
@@ -516,6 +611,7 @@ server <- function(input, output) {
               write.csv(tableDEX, file, sep = "\t")
             }
           )
+        
       } else {
         output$MarkTable_Batch <- DT::renderDataTable({NULL})
         output$text_error_dex <- renderText({"No feature passes the logfc threshold"})
@@ -669,8 +765,8 @@ server <- function(input, output) {
         
       } else{
         
-        tissues <- heatmapdata$tissue[heatmapdata$gene_name == "nduo-6"]
-        fake_heatmap_data$tissue <- tissues
+        tissues_table <- heatmapdata[heatmapdata$gene_name == "nduo-6", c("cell.type", "tissue")]
+        fake_heatmap_data <- merge(fake_heatmap_data, tissues_table, by = "cell.type")
       }
       
       heatmapdata <- rbind(heatmapdata, fake_heatmap_data)

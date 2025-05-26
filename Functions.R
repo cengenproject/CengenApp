@@ -121,10 +121,7 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
              avg_logFC = fc.results[features,]$avg_log2FC,
              p_val = p_val,
              p_val_adj = p_val_adj) |>
-    dplyr::arrange(p_val_adj, p_val, desc(abs(avg_logFC))) |>
-    mutate(p_val = signif(p_val, 2),
-           p_val_adj = signif(p_val_adj, 2),
-           avg_logFC = round(avg_logFC, 1))
+    dplyr::arrange(p_val_adj, p_val, desc(abs(avg_logFC)))
 }
 
 

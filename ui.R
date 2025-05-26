@@ -38,43 +38,42 @@ cat("############ End initializations ################\n")
 
 
 source("Functions.R")
-unreliable_gene_ids <- c(
-  "WBGene00023498",
-  "WBGene00023497",
-  "WBGene00004397",
-  "WBGene00006843",
-  "WBGene00004010",
-  "WBGene00006789",
-  "WBGene00001135",
-  "WBGene00001079",
-  "WBGene00006783",
-  "WBGene00000501",
-  "WBGene00006788",
-  "WBGene00001555",
-  "WBGene00206533",
-  "WBGene00011964",
-  "WBGene00018172",
-  "WBGene00016259",
-  "WBGene00023407"
-)
 
-msg <- filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name %>% paste(., collapse = ", ")
+
+
+msg <- filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", ")
 
 
 ## UI ----
 ui <- fluidPage(
-  tags$head(includeHTML(("google-analytics-script2.html"))),
-  theme = "Theme.min.css",
-  tags$head(tags$style(
-    HTML(".shiny-output-error-validation {color: red;}")
-  )),
   
-  # App title ----
-  titlePanel(
-    "Discovery and analysis of the C. elegans Neuronal Gene Expression Network -- CeNGEN"
+  #~ HTML head ----
+  
+  
+  tags$head(
+    
+    includeHTML(("www/google-analytics-script2.html")),
+    
+    tags$style(
+      HTML(
+        ".shiny-output-error-validation {color: red;}",
+        ".delineated-box {border: 1px dotted grey; margin-top: 10px; padding: 10px}",
+        ".highlighted-box {border: 2px solid #df691a;
+                          margin-top: 10px;
+                          padding: 10px;
+                          background-color: #E5E8E8;
+                          color: black;
+                          width: 60%;
+                          margin: auto; }"
+      )
+    ),
+    
+    tags$link(rel="shortcut icon", href="L4.png"),
+    
   ),
-  tags$a(href="http://www.cengen.org/single-cell-rna-seq/", "CeNGENApp Help and Documentation"),
-  hr(),
+  
+  theme = "Theme.min.css",
+  
   add_busy_spinner(
     spin = "double-bounce",
     color = "orange",
@@ -85,6 +84,29 @@ ui <- fluidPage(
     height = "50px",
     width = "50px"
   ),
+  
+  #~ App header ----
+  div(
+    tags$img(src = "L4_big.png", style = "margin: 10px"),
+    titlePanel(
+      "L4 CeNGEN -- Discovery and analysis of the C. elegans Neuronal Gene Expression Network"
+    ),
+    style = "display: flex; align-items: center;"
+  ),
+  
+  div(
+    "This app enables analysis of the ",
+    tags$img(src = "L4.png"),
+    strong("L4"), " dataset. Find the ",
+    tags$img(src = "ad.png")," adult dataset ",
+    a("here", href = "https://cengen.shinyapps.io/adult"),
+    "and the",
+    tags$img(src = "L1.png"),
+    "L1 dataset",
+    a("here", href = "https://cengen.shinyapps.io/L1app"),
+    class = "highlighted-box"
+  ),
+  hr(),
   
   # Main panel showing plots ----
   tabsetPanel(
@@ -121,7 +143,8 @@ ui <- fluidPage(
             actionButton("TCell", "Expressed genes", icon = icon("hand-point-right"))
             
           ),
-          #column(width = 1, offset = 0, style='padding:5px;'),
+          
+          
           column(
             4,
             textInput(
@@ -202,12 +225,12 @@ ui <- fluidPage(
           column(
             4,
             textInput(
-              inputId = "String1",
+              inputId = "PCT_group1",
               label = "Group 1",
               value = "AWC_ON,AWC_OFF"
             ),
             textInput(
-              inputId = "Expressed",
+              inputId = "PCT_expressed_threshold",
               label = "Minimum percentage of cells expressing the gene",
               value = 65
             ),
@@ -218,12 +241,12 @@ ui <- fluidPage(
           column(
             4,
             textInput(
-              inputId = "String2",
+              inputId = "PCT_group2",
               label = "Group 2",
               value = "SMD,SIB"
             ),
             textInput(
-              inputId = "NonExpressed",
+              inputId = "PCT_notExpressed_threshold",
               label = "Maximum percentage of cells expressing the gene",
               value = 2
             ),
@@ -233,17 +256,26 @@ ui <- fluidPage(
         fluidRow(
           #column(1),
           column(4,
-                 br(), DT::dataTableOutput("YesExpressed")),
+                 br(), 
+                 div(
+                   "Expressed in group 1",
+                   DT::dataTableOutput("YesExpressed"),
+                   class = "delineated-box"
+                 )),
           column(4,
                  br(),
-                 DT::dataTableOutput("NoExpressed")),
+                 div(
+                   "Not expressed in group 2",
+                   DT::dataTableOutput("NoExpressed"),
+                   class = "delineated-box"
+                 )),
           
           column(4,
-                 br(),
-                 DT::dataTableOutput("Result")
-                 #span(textOutput("text3"), style="color:red"))
-          )
-          
+                 div(
+                   "Result (expressed in group 1, not group 2)",
+                   DT::dataTableOutput("Result"),
+                   class = "delineated-box"
+                 ))
         )
       )
     ),
@@ -328,7 +360,7 @@ ui <- fluidPage(
       fluidPage(
         hr(),
         h6("Find differentially expressed genes between two cell types or two groups of cell types."),
-        h6("The calculation can take a few minutes."),
+        h6("Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."),
         h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
         hr(),
         fluidRow(
@@ -378,6 +410,7 @@ ui <- fluidPage(
         htmlOutput("legend_de_columns", container = h6)
       )
     ),
+    
     
     
     ### Heatmaps of gene expression Panel ----
