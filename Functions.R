@@ -113,14 +113,14 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
                   })
   
   
-  p_val_adj = p.adjust(p_val, method = "bonferroni", n = nrow(allCells.data))
+  p_val_adj = p.adjust(p_val, method = "BH", n = nrow(allCells.data))
   
-  data.frame(gene = features,
+  data.frame(gene_id = features,
              pct.1 = fc.results[features,]$pct.1,
              pct.2 = fc.results[features,]$pct.2,
              avg_logFC = fc.results[features,]$avg_log2FC,
              p_val = p_val,
-             p_val_adj = p_val_adj) |>
+             FDR = p_val_adj) |>
     dplyr::arrange(p_val_adj, p_val, desc(abs(avg_logFC)))
 }
 
@@ -149,7 +149,7 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
                   })
   
   FDR <- p.adjust(p_val, method = "BH")
-  data.frame(gene = rownames(pseudobulk_matrix),
+  data.frame(gene_id = rownames(pseudobulk_matrix),
              mean_1 = mean_1,
              mean_2 = mean_2,
              log2FC = log2FC,
@@ -158,7 +158,7 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
     dplyr::arrange(FDR, p_val, desc(abs(log2FC))) |>
     mutate(p_val = signif(p_val, 2),
            FDR = signif(FDR, 2),
-           log2FC = round(log2FC, 1),
+           avg_logFC = round(log2FC, 1),
            across(contains("mean"),
                   ~ round(.x, 1)))
 }
@@ -175,13 +175,13 @@ perform_de_pb_edger <- function(ident.1, ident.2, ...){
   et$table |>
     tibble::rownames_to_column() |>
     dplyr::mutate(p_val_adj = p.adjust(PValue, method = "BH")) |>
-    dplyr::rename(gene = rowname,
+    dplyr::rename(gene_id = rowname,
                   p_val = PValue,
                   FDR = p_val_adj) |>
     dplyr::arrange(FDR, p_val) |>
-    mutate(p_val = signif(p_val, 2),
-           FDR = signif(FDR, 2),
-           logFC = round(logFC, 1))
+    dplyr::mutate(p_val = signif(p_val, 2),
+                  FDR = signif(FDR, 2),
+                  avg_logFC = round(logFC, 1))
 }
 
 
@@ -208,7 +208,8 @@ perform_de <- function(ident.1, ident.2, method, ...){
   
   # finish
   
-  left_join(tableDEX, gene_list, by = c("gene" = "gene_id"))
+  left_join(tableDEX, gene_list, by = c("gene_id")) |>
+    dplyr::relocate(gene_name, gene_id, -seqnames)
 }
 
 

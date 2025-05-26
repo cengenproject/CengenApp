@@ -463,12 +463,12 @@ server <- function(input, output) {
   
   
   ### Find Differential Expression between Cell Types Panel ----
-  observeEvent(input$DEXButton, {
-    cat("--> testing DE of ", input$batch1, " vs ", input$batch2, "\n")
+  observeEvent(input$DEbutton, {
+    cat("--> testing DE of ", input$DEgroup1, " vs ", input$DEgroup2, "\n")
     
-    b1 <- unlist(strsplit(input$batch1, split = ","))
+    b1 <- unlist(strsplit(input$DEgroup1, split = ","))
     b1 <- gsub(" ", "", as.character(b1))
-    b2 <- unlist(strsplit(input$batch2, split = ","))
+    b2 <- unlist(strsplit(input$DEgroup2, split = ","))
     b2 <- gsub(" ", "", as.character(b2))
     
     b1_is_valid <- all(b1 %in% all_cell_types)
@@ -487,7 +487,7 @@ server <- function(input, output) {
       output$MarkTable_Batch <- DT::renderDataTable({data.frame()})
       output$text_error_dex <- renderText({"One or more cell types introduced are not correct"})
       
-    } else if(input$test == "Pseudobulk: edgeR pairwise exact test" && comparing_multiple_cell_types){
+    } else if(input$DEtest == "Pseudobulk: edgeR pairwise exact test" && comparing_multiple_cell_types){
       
       output$MarkTable_Batch <- DT::renderDataTable({data.frame()})
       output$text_error_dex <- renderText({"edgeR exact test can only compare pairs of cell types"})
@@ -514,12 +514,12 @@ server <- function(input, output) {
         perform_de(
           ident.1 = b1,
           ident.2 = b2,
-          method = input$test
+          method = input$DEtest
         )
       
       
-      if(input$test == "Pseudobulk: edgeR pairwise exact test" ||
-         input$test == "Pseudobulk: Wilcoxon"){
+      if(input$DEtest == "Pseudobulk: edgeR pairwise exact test" ||
+         input$DEtest == "Pseudobulk: Wilcoxon"){
         
         load_as_needed("edger_precomputed")
         
@@ -546,7 +546,7 @@ server <- function(input, output) {
       
       output$legend_de_columns <- renderText({
         
-        if(input$test == "Wilcoxon on single cells"){
+        if(input$DEtest == "Wilcoxon on single cells"){
           c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test. This test may display inflated power, as it considers each cell as an individual replicate.
           Before testing, the genes are filtered to only consider those displaying enough expression in one of the groups, 
           and a large enough fold change between groups.",
@@ -555,7 +555,7 @@ server <- function(input, output) {
             "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
             "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
           
-        } else if(input$test == "Pseudobulk: Wilcoxon"){
+        } else if(input$DEtest == "Pseudobulk: Wilcoxon"){
           c(
             "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
         Only genes which displayed high enough expression in enough cell types are considered.",
@@ -564,7 +564,7 @@ server <- function(input, output) {
             "log2FC: change in mean expression between group 1 and 2 (log fold change).",
             "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
           )
-        } else if(input$test == "Pseudobulk: edgeR pairwise exact test"){
+        } else if(input$DEtest == "Pseudobulk: edgeR pairwise exact test"){
           c(
             "Testing differential expression between cell types across samples (pseudobulk), using edgeR's exact test.
         Only genes which displayed high enough expression in enough cell types are considered.
@@ -585,21 +585,21 @@ server <- function(input, output) {
         
         output$MarkTable_Batch <- DT::renderDataTable({
           DT::datatable(
-            tableDEX |> head( as.numeric(input$topM2) ),
-            options = list( pageLength = as.numeric(input$topM2) ),
+            tableDEX |> head( as.numeric(input$DEnb_display) ),
+            options = list( pageLength = as.numeric(input$DEnb_display) ),
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
-          ) |> formatStyle(c(1:8), color = "black", backgroundColor = 'white') |>
+          ) |> formatStyle(c(1:9), color = "black", backgroundColor = 'white') |>
             formatRound(columns = c('avg_logFC'), digits = 1) |>
-            formatSignif(columns = c('p_val', 'p_val_adj'), digits = 2)
+            formatSignif(columns = c('p_val', 'FDR'), digits = 2)
         })
         
         output$downloadDEX <-
           downloadHandler(
             filename = function() {
               paste(
-                "DEXGens-",
+                "DEgenes-",
                 paste(b1, collapse = ","),
                 "-",
                 paste(b2, collapse = ","),

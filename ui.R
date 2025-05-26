@@ -367,31 +367,31 @@ ui <- fluidPage(
           column(
             4,
             selectInput(
-              inputId = "batch1",
+              inputId = "DEgroup1",
               label = "Select Group 1",
               choices = all_cell_types,
               selected = "AVL",
               multiple = TRUE
             ),
             selectInput(
-              inputId = "batch2",
+              inputId = "DEgroup2",
               label = "Select Group 2: Introduce cell types, NEURONS or ALL",
               choices = c("ALL","NEURONS", all_cell_types),
               selected = c("RME_DV","RME_LR"),
               multiple = TRUE
             ),
-            actionButton("DEXButton", "Calculate DEX", icon = icon("hand-point-right"))
+            actionButton("DEbutton", "Calculate DEX", icon = icon("hand-point-right"))
             
           ),
           column(
             3,
             selectInput(
-              inputId = "test",
+              inputId = "DEtest",
               label = "Select statistical test",
               choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test")
             ),
             textInput(
-              inputId = "topM2",
+              inputId = "DEnb_display",
               label = "Show top X genes",
               value = "100"
             )
