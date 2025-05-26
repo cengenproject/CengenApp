@@ -64,13 +64,17 @@ FoldChange <- function (cells.1, cells.2, features) {
 
 perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf, logfc.threshold = 0.25){
   
-  load_as_needed("allCells.data")
+  
   load_as_needed("allCells.metadata")
   
   cells.1 <- allCells.metadata$Cell.type %in% ident.1
   
   cells.2 <- allCells.metadata$Cell.type %in% ident.2
   
+  
+  rm("allCells.metadata", envir = .GlobalEnv)
+  
+  load_as_needed("allCells.data")
   
   
   expr.1 <- allCells.data[,cells.1]
