@@ -123,7 +123,7 @@ server <- function(input, output) {
         output$text1 <-
           isolate(renderText({
             shiny::validate(need(
-              !dplyr::filter(gene_list, gene_name == var)$gene_id %in% utr,
+              !dplyr::filter(gene_list, gene_name == var)$gene_id %in% unreliable_gene_ids,
               message = paste0(
                 "WARNING: ",
                 input$Tgene_name,

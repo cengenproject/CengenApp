@@ -25,10 +25,6 @@ load_as_needed("all_cell_types")
 load_as_needed("all_neuron_types")
 
 
-utr <- c("WBGene00023498","WBGene00023497","WBGene00004397","WBGene00006843",
-         "WBGene00004010","WBGene00006789","WBGene00001135","WBGene00001079",
-         "WBGene00001135","WBGene00006783","WBGene00000501","WBGene00006788",
-         "WBGene00001555")
 
 
 

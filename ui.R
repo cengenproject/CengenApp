@@ -38,8 +38,7 @@ cat("############ End initializations ################\n")
 
 
 source("Functions.R")
-utr <-
-  c(
+unreliable_gene_ids <- c(
     "WBGene00023498",
     "WBGene00023497",
     "WBGene00004397",
@@ -48,7 +47,6 @@ utr <-
     "WBGene00006789",
     "WBGene00001135",
     "WBGene00001079",
-    "WBGene00001135",
     "WBGene00006783",
     "WBGene00000501",
     "WBGene00006788",
@@ -60,7 +58,7 @@ utr <-
     "WBGene00023407"
   )
 
-msg <- filter(gene_list, gene_id %in% utr)$gene_name %>% paste(., collapse = ", ")
+msg <- filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name %>% paste(., collapse = ", ")
 
 
 ## UI ----
