@@ -5,6 +5,7 @@ config <- list.files("deployment/", pattern = "config_", full.names = TRUE)
 if(length(config) == 1){
   source(config)
 } else if(length(config) > 1){
+  # here set default file
   source("deployment/config_adult.R")
 } else{
   stop("Configuration file not found")

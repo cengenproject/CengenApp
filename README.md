@@ -53,10 +53,32 @@ This tab allows the user to introduce a list of genes separated by commas, space
 By hovering and clicking with the mouse over dots the user can read the information of the values of each dot in terms of proportion of cells expressing the gene, the scaled TPM expression values, cell type and modality. 
 
 
+More detailed documentation on [cengen.org](https://www.cengen.org/single-cell-rna-seq/).
 
-# Deployment
 
-The same App is used with several datasets and slightly different presentations. No `envVars` on Shinyapps.io, We include a file `deployment/config_xx` indicating we're using the app for `xx` (e.g. L4, L1, ...).
+
+
+# Updates and local installation
+
+Download the app source code from [Github](https://github.com/cengenproject/CengenApp). Download the required dataset from the [cengen.org download page](https://www.cengen.org/downloads/) or by request to authors.
+
+Ensure all packages listed at the beginning of the script `ui.R` are installed.
+
+For local use, ensure the configuration file is available and updated, e.g. `deployment/config_L4.R`. Importantly, make sure in this file `data_dir` points to the correct dataset.
+
+If you have several config files, at the top of `global.R`, set the default file.
+
+This should work for a local installation.
+
+For a deployment to shinyapps.io, you additionally want to have a manifest file, e.g. `deployment/manifest_L4.txt`, that lists the files that are to be uploaded to the shinyapps.io server. Note that any file not listed in the manifest will not be uploaded. When the app is started, it looks for files named `deployment/config_xxx.R`, if it finds a single file, this describes the dataset to use.
+
+Use the `rsconnect` calls below to upload the app, using only the manifest for one specific dataset.
+
+
+
+## Deployment
+
+The same App is used with several datasets and slightly different presentations. No `envVars` on Shinyapps.io, We include a file `deployment/config_xx.R` indicating we're using the app for `xx` (e.g. L4, L1, ...).
 
 
 L4 app:
@@ -73,6 +95,10 @@ Adult app:
 ```
 rsconnect::deployApp(appDir = ".", appFileManifest = "deployment/manifest_adult.txt", appName = "adult", appTitle = "adult app", upload = TRUE)
 ```
+
+
+
+
 
 
 
