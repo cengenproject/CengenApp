@@ -60,9 +60,9 @@ More detailed documentation on [cengen.org](https://www.cengen.org/single-cell-r
 
 # Updates and local installation
 
-Download the app source code from [Github](https://github.com/cengenproject/CengenApp). Download the required dataset from the [cengen.org download page](https://www.cengen.org/downloads/) or by request to authors.
+Download the app source code from [Github](https://github.com/cengenproject/CengenApp). Ensure all packages listed at the beginning of the script `ui.R` are installed.
 
-Ensure all packages listed at the beginning of the script `ui.R` are installed.
+Download the required dataset from the [cengen.org download page](https://www.cengen.org/downloads/) or by request to authors. Run the content of `validate_dataset.R` to ensure the files and format are correct.
 
 For local use, ensure the configuration file is available and updated, e.g. `deployment/config_L4.R`. Importantly, make sure in this file `data_dir` points to the correct dataset.
 
