@@ -52,3 +52,28 @@ This tab allows the user to introduce a list of genes separated by commas, space
 
 By hovering and clicking with the mouse over dots the user can read the information of the values of each dot in terms of proportion of cells expressing the gene, the scaled TPM expression values, cell type and modality. 
 
+
+
+# Deployment
+
+The same App is used with several datasets and slightly different presentations. No `envVars` on Shinyapps.io, We include a file `deployment/config_xx` indicating we're using the app for `xx` (e.g. L4, L1, ...).
+
+
+L4 app:
+```
+rsconnect::deployApp(appDir = ".", appFileManifest = "deployment/manifest_L4.txt", appName = "L4app", appTitle = "L4 app", upload = TRUE)
+```
+
+L1 app:
+```
+rsconnect::deployApp(appDir = ".", appFileManifest = "deployment/manifest_L1.txt", appName = "L1app", appTitle = "L1 app", upload = TRUE)
+```
+
+Adult app:
+```
+rsconnect::deployApp(appDir = ".", appFileManifest = "deployment/manifest_adult.txt", appName = "adult", appTitle = "adult app", upload = TRUE)
+```
+
+
+
+

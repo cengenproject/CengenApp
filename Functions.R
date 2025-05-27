@@ -12,7 +12,7 @@
 load_as_needed <- function(dataset){
   if(!exists(dataset)){
     assign(dataset,
-           qs::qread(paste0("data/2025-03-21/", dataset, ".qs")),
+           qs::qread(file.path(data_dir, paste0(dataset, ".qs"))),
            envir = .GlobalEnv)
   }
 }

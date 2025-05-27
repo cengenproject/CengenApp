@@ -17,8 +17,8 @@ server <- function(input, output) {
       
       if( input$Tcell_cut == "All Cells Unfiltered" ) {
         
-        load_as_needed("L4.all.TPM.raw_th")
-        th = L4.all.TPM.raw_th
+        load_as_needed("all.TPM.raw_th")
+        th = all.TPM.raw_th
         
       } else {
         load_as_needed("ths")
@@ -128,8 +128,8 @@ server <- function(input, output) {
     
     if( input$Tgene_cut == "All Cells Unfiltered" ) {
       
-      load_as_needed("L4.all.TPM.raw_th")
-      th = L4.all.TPM.raw_th
+      load_as_needed("all.TPM.raw_th")
+      th = all.TPM.raw_th
       
     } else {
       
@@ -237,8 +237,8 @@ server <- function(input, output) {
     
     if( input$Tgene_cut_batch == "All Cells Unfiltered" ) { 
       
-      load_as_needed("L4.all.TPM.raw_th")
-      th = L4.all.TPM.raw_th
+      load_as_needed("all.TPM.raw_th")
+      th = all.TPM.raw_th
       
     } else { 
       
@@ -650,9 +650,9 @@ server <- function(input, output) {
       
     } else {
       
-      load_as_needed("L4.TPM.raw.scaled.long")
+      load_as_needed("TPM.raw.scaled.long")
       
-      heatmapdata = L4.TPM.raw.scaled.long
+      heatmapdata = TPM.raw.scaled.long
       
     }
     
@@ -713,13 +713,13 @@ server <- function(input, output) {
       # get full expression matrix
       if(ds=="Neurons only"){
         
-        load_as_needed("L4.TPM.medium")
-        expr_matrix <- L4.TPM.medium
+        load_as_needed("TPM.medium")
+        expr_matrix <- TPM.medium
         
       } else {
         
-        load_as_needed("L4.all.TPM.raw")
-        expr_matrix <- as(L4.all.TPM.raw,"dgCMatrix")
+        load_as_needed("all.TPM.raw")
+        expr_matrix <- as(all.TPM.raw,"dgCMatrix")
         
       }
       
@@ -919,7 +919,7 @@ server <- function(input, output) {
     cat("--> heatmap PlotHeatmapFromFile\n")
     
     load_as_needed("med.scaled.long")
-    load_as_needed("L4.TPM.raw.scaled.long")
+    load_as_needed("TPM.raw.scaled.long")
     
     ds <- input$HMdataset
     inFile <- input$HMfile_input
@@ -936,25 +936,25 @@ server <- function(input, output) {
     ss <- unique(c(families, ss, filter(gene_list, gene_id %in% ss | seqnames %in% ss)$gene_name))
     
     mis <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% med.scaled.long$gene_name & ss %in% gene_list$gene_name]
-    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% L4.TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
+    mis_all <- ss[ss %in% c(gene_list$gene_id, gene_list$gene_name, gene_list$seqnames) & !ss %in% TPM.raw.scaled.long$gene_name & ss %in% gene_list$gene_name]
     
     if(ds=="Neurons only"){
       
-      load_as_needed("L4.TPM.medium")
+      load_as_needed("TPM.medium")
       load_as_needed("ths")
-      load_as_needed("L4.all.TPM.raw")
+      load_as_needed("all.TPM.raw")
       
-      L4.TPM=L4.TPM.medium
-      heatmapdata=med.scaled.long
+      TPM_mat = TPM.medium
+      heatmapdata = med.scaled.long
       cc = colnames(ths)[-c(1,130,131)]
       missing = mis
     } else {
       
-      load_as_needed("L4.all.TPM.raw")
+      load_as_needed("all.TPM.raw")
       
-      L4.TPM=as(L4.all.TPM.raw,"dgCMatrix")
-      heatmapdata=L4.TPM.raw.scaled.long
-      cc=colnames(L4.all.TPM.raw)
+      TPM_mat = as(all.TPM.raw,"dgCMatrix")
+      heatmapdata = TPM.raw.scaled.long
+      cc=colnames(all.TPM.raw)
       missing = mis_all
     }
     
@@ -963,7 +963,7 @@ server <- function(input, output) {
     
     flp.neuron.scaled <- heatmapdata[which(heatmapdata$gene_name %in% ss),]
     flp.ids <- as.character(vlookup(unique(flp.neuron.scaled$gene_name), gene_list, result_column = 1, lookup_column = 2))
-    flp.expr <- L4.TPM[flp.ids,, drop=FALSE]
+    flp.expr <- TPM_mat[flp.ids,, drop=FALSE]
     
     # order
     if ( nrow(flp.expr) > 1 && input$HMreorder_rows ) {
@@ -986,7 +986,7 @@ server <- function(input, output) {
       dff <- data.frame(gene_name=i, cell.type= cc, scaled.expr=0, prop=0, Modality="NA")
       if(ds!="Neurons only"){
         colnames(dff)[5]<-"tissue"
-        dff$tissue <- filter(L4.TPM.raw.scaled.long, gene_name=="nduo-6")$tissue
+        dff$tissue <- filter(TPM.raw.scaled.long, gene_name=="nduo-6")$tissue
       }
       flp.neuron.scaled <- rbind(flp.neuron.scaled, dff)
     }

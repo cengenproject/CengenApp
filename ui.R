@@ -41,7 +41,12 @@ source("Functions.R")
 
 
 
-msg <- filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", ")
+warning_msg <- h6( paste0(
+  "WARNING: Expression values for ",
+  filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", "),
+  " are unreliable as they have been overexpressed to generate transgenic strains."
+),
+style="color:orange")
 
 
 ## UI ----
@@ -68,7 +73,7 @@ ui <- fluidPage(
       )
     ),
     
-    tags$link(rel="shortcut icon", href="L4.png"),
+    tags$link(rel="shortcut icon", href=favicon),
     
   ),
   
@@ -87,24 +92,26 @@ ui <- fluidPage(
   
   #~ App header ----
   div(
-    tags$img(src = "L4_big.png", style = "margin: 10px"),
+    tags$img(src = icon_big, style = "margin: 10px"),
     titlePanel(
-      "L4 CeNGEN -- Discovery and analysis of the C. elegans Neuronal Gene Expression Network"
+      paste(dataset, "CeNGEN -- Discovery and analysis of the C. elegans Neuronal Gene Expression Network")
     ),
     style = "display: flex; align-items: center;"
   ),
   
   div(
     "This app enables analysis of the ",
-    tags$img(src = "L4.png"),
-    strong("L4"), " dataset. Find the ",
-    tags$img(src = "ad.png")," adult dataset ",
-    a("here", href = "https://cengen.shinyapps.io/adult"),
-    "and the",
-    tags$img(src = "L1.png"),
-    "L1 dataset",
-    a("here", href = "https://cengen.shinyapps.io/L1app"),
+    
+    tags$img(src = paste0(dataset, ".png")),
+    strong(dataset), " dataset. Other datasets: ",
+    HTML(paste0('<img src="',other_apps$name,'.png"/> <a href="https://cengen.shinyapps.io/',other_apps$url,'">',other_apps$name,'</a>',
+                collapse = ", ")),
+    tags$p("Additional details and documentation ",
+           tags$a("on the cengen.org page",
+                  href = "https://www.cengen.org/single-cell-rna-seq/"),
+           "."),
     class = "highlighted-box"
+    
   ),
   hr(),
   
@@ -184,7 +191,7 @@ ui <- fluidPage(
           )
         ),
         br(),
-        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        warning_msg,
         fluidRow(
           column(1),
           column(
@@ -218,7 +225,7 @@ ui <- fluidPage(
         h6(
           "Find genes expressed in one group of cell types and not in another group based on the percentages of cells expressing the gene."
         ),
-        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        warning_msg,
         br(),
         fluidRow(
           #column(1),
@@ -308,7 +315,7 @@ ui <- fluidPage(
             label = "Show top X genes",
             value = "100"
           ),
-          h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+          warning_msg,
           DT::dataTableOutput("MarkTable"),
           downloadButton('downloadMarkers', "Download table"),
           h6("HEADER LEGEND:"),
@@ -335,7 +342,7 @@ ui <- fluidPage(
             label = "Show top X genes",
             value = "100"
           ),
-          h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+          warning_msg,
           
           DT::dataTableOutput("MarkTable2"),
           downloadButton('downloadMarkers2', "Download table"),
@@ -361,7 +368,7 @@ ui <- fluidPage(
         hr(),
         h6("Find differentially expressed genes between two cell types or two groups of cell types."),
         h6("Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."),
-        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        warning_msg,
         hr(),
         fluidRow(
           column(
@@ -421,7 +428,7 @@ ui <- fluidPage(
         h6(
           "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
         ),
-        h6( paste0("WARNING: Expression values for ",msg," are unreliable as they have been overexpressed to generate transgenic strains."), style="color:orange"),
+        warning_msg,
         textAreaInput(
           inputId = "HMgenelist",
           label = "Introduce a list of genes",

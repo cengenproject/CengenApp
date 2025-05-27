@@ -1,22 +1,46 @@
-unreliable_gene_ids <- c(
-  "WBGene00023498",
-  "WBGene00023497",
-  "WBGene00004397",
-  "WBGene00006843",
-  "WBGene00004010",
-  "WBGene00006789",
-  "WBGene00001135",
-  "WBGene00001079",
-  "WBGene00006783",
-  "WBGene00000501",
-  "WBGene00006788",
-  "WBGene00001555",
-  "WBGene00206533",
-  "WBGene00011964",
-  "WBGene00018172",
-  "WBGene00016259",
-  "WBGene00023407"
+
+# read config file
+config <- list.files("deployment/", pattern = "config_", full.names = TRUE)
+
+if(length(config) == 1){
+  source(config)
+} else if(length(config) > 1){
+  source("deployment/config_adult.R")
+} else{
+  stop("Configuration file not found")
+}
+
+
+
+
+message("-------------  dataset: ", dataset," ----------------")
+
+# check config loaded
+stopifnot(nchar(dataset) > 1)
+stopifnot(file.exists(file.path("www", favicon) ))
+stopifnot(file.exists(file.path("www", icon_big) ))
+stopifnot(dir.exists(data_dir))
+stopifnot( length(list.files(data_dir)) > 5 )
+
+
+
+# variables directly defined from config file
+
+favicon <- paste0(dataset, ".png")
+icon_big <- paste0(dataset, "_big.png")
+
+
+available_apps <- data.frame(
+  name = c("L1", "L4", "adult", "male"),
+  url = c("L1app", "L4app", "adult", "male")
 )
+
+other_apps <- available_apps[available_apps$name != dataset,]
+
+
+
+
+# general variables
 
 ordered_tissues <- c(
   "Neuron", "Neuronal_progenitors", "Glia", "Epidermis", "Muscle_mesoderm", "Pharynx",
@@ -29,3 +53,6 @@ pharyngeal_neurons <- c(
   paste0("M", 1:5 |> c("C","I")),
   "NSM"
 )
+
+
+
