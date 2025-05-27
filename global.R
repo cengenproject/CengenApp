@@ -5,8 +5,10 @@ config <- list.files("deployment/", pattern = "config_", full.names = TRUE)
 if(length(config) == 1){
   source(config)
 } else if(length(config) > 1){
+  
   # here set default file
-  source("deployment/config_adult.R")
+  source("deployment/config_male.R")
+  
 } else{
   stop("Configuration file not found")
 }
@@ -41,7 +43,7 @@ other_apps <- available_apps[available_apps$name != dataset,]
 
 
 
-# general variables
+# global variables for all apps
 
 ordered_tissues <- c(
   "Neuron", "Neuronal_progenitors", "Glia", "Epidermis", "Muscle_mesoderm", "Pharynx",

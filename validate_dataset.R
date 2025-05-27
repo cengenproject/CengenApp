@@ -11,8 +11,7 @@ validate_dataset("data/2025-03-21_L4/")
 validate_dataset("data/2025-03-17_L1/")
 validate_dataset("data/010324_adult/")
 validate_dataset("data/052225_male/male/")
-
-
+validate_dataset("data/052225_male/herm/")
 
 
 
