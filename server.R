@@ -645,14 +645,16 @@ server <- function(input, output) {
       
       load_as_needed("med.scaled.long")
       
-      heatmapdata = med.scaled.long
+      heatmapdata = med.scaled.long |>
+        select(gene_name, cell.type, scaled.expr, prop)
       
       
     } else {
       
       load_as_needed("TPM.raw.scaled.long")
       
-      heatmapdata = TPM.raw.scaled.long
+      heatmapdata = TPM.raw.scaled.long |>
+        select(gene_name, cell.type, scaled.expr, prop, tissue)
       
     }
     
