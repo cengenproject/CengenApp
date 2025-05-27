@@ -633,6 +633,159 @@ server <- function(input, output) {
   
   
   
+  ### Male vs Herm DE ----
+  observeEvent(input$SDEbutton, {
+    cat("--> sex-specific DE of ♂ ", input$SDEmale, " vs ⚥ ", input$SDEherm, "\n")
+    
+    b1 <- unlist(strsplit(input$SDEmale, split = ","))
+    b1 <- gsub(" ", "", as.character(b1))
+    b2 <- unlist(strsplit(input$SDEherm, split = ","))
+    b2 <- gsub(" ", "", as.character(b2))
+    
+    b1_is_valid <- all(b1 %in% male_all_cell_types)
+    b2_is_valid <- all(b2 %in% herm_all_cell_types)
+    
+    
+    comparing_multiple_cell_types <- (length(b1) > 1) || (length(b2) > 1)
+    
+    
+    if (!b1_is_valid || !b2_is_valid) {
+      
+      output$SDEMarkTable_Batch <- DT::renderDataTable({data.frame()})
+      output$SDEtext_error_dex <- renderText({"One or more cell types introduced are not correct"})
+      
+    } else if(input$SDEtest == "Pseudobulk: edgeR pairwise exact test" && comparing_multiple_cell_types){
+      
+      output$SDEMarkTable_Batch <- DT::renderDataTable({data.frame()})
+      output$SDEtext_error_dex <- renderText({"edgeR exact test can only compare pairs of cell types"})
+      
+    } else{
+      
+      
+      tableDEX <-
+        perform_de(
+          ident.1 = b1,
+          ident.2 = b2,
+          method = input$SDEtest,
+          subset_samples = c("male", "herm")
+        )
+      
+      
+      if(input$SDEtest == "Pseudobulk: edgeR pairwise exact test" ||
+         input$SDEtest == "Pseudobulk: Wilcoxon"){
+        
+        load_as_needed("edger_precomputed")
+        
+        rows_b1 <- edger_precomputed$samples$group %in% b1
+        rows_b2 <- edger_precomputed$samples$group %in% b2
+        
+        nb_sc_group_1 <- edger_precomputed$samples$nb_single_cells[rows_b1] |> sum()
+        nb_sc_group_2 <- edger_precomputed$samples$nb_single_cells[rows_b2] |> sum()
+        nb_rep_group_1 <- edger_precomputed$samples$nb_single_cells[rows_b1] |> length()
+        nb_rep_group_2 <- edger_precomputed$samples$nb_single_cells[rows_b2] |> length()
+        
+        output$SDEpseudobulk_metadata <- renderText({
+          paste0("Comparing group 1 (",nb_sc_group_1," single cells in ",nb_rep_group_1,
+                 " replicates) to group 2 (",nb_sc_group_2," single cells in ",
+                 nb_rep_group_2," replicates)")
+        }, sep = "<br>")
+        
+      } else{
+        output$SDEpseudobulk_metadata <- renderText({""}, sep = "<br>")
+      }
+      
+      
+      output$SDEtext_error_dex <- renderText({""})
+      
+      output$SDElegend_de_columns <- renderText({
+        
+        if(input$SDEtest == "Wilcoxon on single cells"){
+          c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test. This test may display inflated power, as it considers each cell as an individual replicate.
+          Before testing, the genes are filtered to only consider those displaying enough expression in one of the groups, 
+          and a large enough fold change between groups.",
+            "Columns:",
+            "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
+            "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
+            "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
+          
+        } else if(input$SDEtest == "Pseudobulk: Wilcoxon"){
+          c(
+            "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
+        Only genes which displayed high enough expression in enough cell types are considered.",
+            "Columns:",
+            "mean_1 and mean_2: mean expression across samples for group 1 and 2.",
+            "log2FC: change in mean expression between group 1 and 2 (log fold change).",
+            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+          )
+        } else if(input$SDEtest == "Pseudobulk: edgeR pairwise exact test"){
+          c(
+            "Testing differential expression between cell types across samples (pseudobulk), using edgeR's exact test.
+        Only genes which displayed high enough expression in enough cell types are considered.
+        Note that the exact test only allows pairwise comparisons, edgeR implements other tests (based on glm) which allow more complex comparisons but are impractical to run on a website.",
+            "Columns:",
+            "logFC: change in mean expression between group 1 and 2 (log fold change).",
+            "logCPM: mean expression of the gene across all groups (log of Count Per Million reads)",
+            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+          )
+        }
+      }, sep = "<br>")
+      
+      
+      
+      
+      # Finalize output
+      if (nrow(tableDEX) > 0) {
+        
+        output$SDEMarkTable_Batch <- DT::renderDataTable({
+          
+          DT::datatable(
+            tableDEX |> head( as.numeric(input$DEnb_display) ),
+            options = list( pageLength = as.numeric(input$DEnb_display) ),
+            style = 'jQueryUI',
+            class = 'cell-border stripe',
+            rownames = FALSE
+          ) |>
+            formatStyle(c(1:9), color = "black", backgroundColor = 'white') |>
+            formatRound(columns = intersect(c("avg_logFC", "mean_1", "mean_2", "logCPM"),
+                                            colnames(tableDEX)),
+                        digits = 1) |>
+            formatSignif(columns =intersect(c("p_val", "FDR"),
+                                            colnames(tableDEX)),
+                         digits = 2)
+          
+        })
+        
+        output$SDEdownload <-
+          downloadHandler(
+            filename = function() {
+              paste(
+                "DEgenes-",
+                paste(b1, collapse = ","),
+                "-",
+                paste(b2, collapse = ","),
+                ".csv",
+                sep = ""
+              )
+            },
+            content = function(file) {
+              write.csv(tableDEX, file, sep = "\t")
+            }
+          )
+        
+      } else {
+        output$SDEMarkTable_Batch <- DT::renderDataTable({NULL})
+        output$SDEtext_error_dex <- renderText({"No feature passes the logfc threshold"})
+      }
+      
+      
+    }
+  }, ignoreNULL = TRUE)
+  
+  
+  
+  
+  
+  
   
   
   

@@ -274,7 +274,7 @@
 
 
 
-# herm ----
+#~ herm ----
 
 # data_dir <- "data/052225_male/herm/"
 # 
@@ -320,3 +320,175 @@
 
 
 
+#~ Combine male-herm ----
+
+# male_allCells.metadata <- qs::qread("data/052225_male/male/allCells.metadata.qs")
+# herm_allCells.metadata <- qs::qread("data/052225_male/herm/allCells.metadata.qs")
+# 
+# male_allCells.metadata$sample_set <- "male"
+# herm_allCells.metadata$sample_set <- "herm"
+# 
+# comb_allCells.metadata <- rbind(
+#   male_allCells.metadata,
+#   herm_allCells.metadata
+# )
+# 
+# stopifnot(anyDuplicated(rownames(comb_allCells.metadata)) == 0L)
+# 
+# qs::qsave(comb_allCells.metadata,
+#           "data/052225_male/male/comb_allCells.metadata.qs")
+
+
+
+
+# male_allCells.data <- qs::qread("data/052225_male/male/allCells.data.qs")
+# herm_allCells.data <- qs::qread("data/052225_male/herm/allCells.data.qs")
+# 
+# # match rows (some genes are absent from male, others from herma)
+# all_rownames <- union(rownames(male_allCells.data),
+#                       rownames(herm_allCells.data))
+# 
+# 
+# rows_missing_from_male <- setdiff(all_rownames, rownames(male_allCells.data))
+# rows_missing_from_herm <- setdiff(all_rownames, rownames(herm_allCells.data))
+# 
+# 
+# male_extra_rows <- Matrix::Matrix(0,
+#                             nrow = length(rows_missing_from_male),
+#                             ncol = ncol(male_allCells.data),
+#                             dimnames = list(rows_missing_from_male,
+#                                             colnames(male_allCells.data)))
+# 
+# male_with_zeros <- rbind(male_extra_rows, male_allCells.data)
+# male_with_zeros <- male_with_zeros[all_rownames,]
+# 
+# 
+# 
+# 
+# herm_extra_rows <- Matrix::Matrix(0,
+#                                   nrow = length(rows_missing_from_herm),
+#                                   ncol = ncol(herm_allCells.data),
+#                                   dimnames = list(rows_missing_from_herm,
+#                                                   colnames(herm_allCells.data)))
+# herm_with_zeros <- rbind(herm_extra_rows, herm_allCells.data)
+# herm_with_zeros <- herm_with_zeros[all_rownames,]
+# 
+# stopifnot(rownames(herm_with_zeros) == rownames(male_with_zeros))
+# stopifnot(colnames(herm_with_zeros) == colnames(herm_allCells.data))
+# stopifnot(colnames(male_with_zeros) == colnames(male_allCells.data))
+# 
+# stopifnot(all.equal(
+#   colSums(herm_with_zeros),
+#   colSums(herm_allCells.data)
+# ))
+# stopifnot(all.equal(
+#   colSums(male_with_zeros),
+#   colSums(male_allCells.data)
+# ))
+# 
+# 
+# comb_allCells.data <- cbind(
+#   male_with_zeros,
+#   herm_with_zeros
+# )
+# 
+# stopifnot(anyDuplicated(rownames(comb_allCells.data)) == 0L)
+# stopifnot(anyDuplicated(colnames(comb_allCells.data)) == 0L)
+# 
+# qs::qsave(comb_allCells.data,
+#           "data/052225_male/male/comb_allCells.data.qs")
+
+
+# stopifnot(all.equal(
+#   qs::qread("data/052225_male/male/comb_allCells.metadata.qs") |>
+#     rownames(),
+#   qs::qread("data/052225_male/male/comb_allCells.data.qs") |>
+#     colnames()
+# ))
+
+                    
+
+
+
+                    
+# male_pseudobulk_matrix <- qs::qread("data/052225_male/male/pseudobulk_matrix.qs")
+# herm_pseudobulk_matrix <- qs::qread("data/052225_male/herm/pseudobulk_matrix.qs")
+# 
+# # colnames are different
+# stopifnot(length(intersect(
+#   colnames(male_pseudobulk_matrix),
+#   colnames(herm_pseudobulk_matrix)
+# )) == 0L )
+# 
+# 
+# # match rows (some genes are absent from male, others from herma)
+# all_rownames <- union(rownames(male_pseudobulk_matrix),
+#                       rownames(herm_pseudobulk_matrix))
+# 
+# 
+# rows_missing_from_male <- setdiff(all_rownames, rownames(male_pseudobulk_matrix))
+# rows_missing_from_herm <- setdiff(all_rownames, rownames(herm_pseudobulk_matrix))
+# 
+# 
+# male_extra_rows <- Matrix::Matrix(0,
+#                                   nrow = length(rows_missing_from_male),
+#                                   ncol = ncol(male_pseudobulk_matrix),
+#                                   dimnames = list(rows_missing_from_male,
+#                                                   colnames(male_pseudobulk_matrix)))
+# 
+# male_with_zeros <- rbind(male_extra_rows, male_pseudobulk_matrix)
+# male_with_zeros <- male_with_zeros[all_rownames,]
+# 
+# 
+# 
+# 
+# herm_extra_rows <- Matrix::Matrix(0,
+#                                   nrow = length(rows_missing_from_herm),
+#                                   ncol = ncol(herm_pseudobulk_matrix),
+#                                   dimnames = list(rows_missing_from_herm,
+#                                                   colnames(herm_pseudobulk_matrix)))
+# herm_with_zeros <- rbind(herm_extra_rows, herm_pseudobulk_matrix)
+# herm_with_zeros <- herm_with_zeros[all_rownames,]
+# 
+# stopifnot(rownames(herm_with_zeros) == rownames(male_with_zeros))
+# stopifnot(colnames(herm_with_zeros) == colnames(herm_pseudobulk_matrix))
+# stopifnot(colnames(male_with_zeros) == colnames(male_pseudobulk_matrix))
+# 
+# stopifnot(all.equal(
+#   colSums(herm_with_zeros),
+#   colSums(herm_pseudobulk_matrix)
+# ))
+# stopifnot(all.equal(
+#   colSums(male_with_zeros),
+#   colSums(male_pseudobulk_matrix)
+# ))
+# 
+# 
+# comb_pseudobulk_matrix <- cbind(
+#   male_with_zeros,
+#   herm_with_zeros
+# )
+# 
+# attr(comb_pseudobulk_matrix, "sample_set") <- rep(c("male", "herm"),
+#                                              times = c(ncol(male_with_zeros),
+#                                                        ncol(herm_with_zeros)))
+# 
+# stopifnot(anyDuplicated(rownames(comb_pseudobulk_matrix)) == 0L)
+# stopifnot(anyDuplicated(colnames(comb_pseudobulk_matrix)) == 0L)
+# 
+# qs::qsave(comb_pseudobulk_matrix,
+#           "data/052225_male/male/comb_pseudobulk_matrix.qs")
+
+
+
+
+
+
+
+
+
+                    
+                    
+                    
+                    
+                    

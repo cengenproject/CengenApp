@@ -24,6 +24,10 @@ load_as_needed("gene_list")
 load_as_needed("all_cell_types")
 load_as_needed("all_neuron_types")
 
+if(dataset == "male"){
+  male_all_cell_types <- qs::qread(file.path(data_dir, "all_cell_types.qs"))
+  herm_all_cell_types <- qs::qread(file.path(data_dir_herm, "all_cell_types.qs"))
+}
 
 
 
@@ -40,41 +44,70 @@ load_as_needed("all_neuron_types")
 # the Seurat object (not a full Seurat object)
 
 mean.fxn <- function(x) {
-  return(log(x = rowMeans(x = expm1(x = x)) + 1, 
-             base = 2))
+  log(rowMeans(expm1(x)) + 1,
+      base = 2)
 }
 
 
 # note this is a rewrite of Seurat::FoldChange that does only the minimum required here,
 # and works directly with the content of the Seurat object( not a full Seurat object)
-FoldChange <- function (cells.1, cells.2, features) {
+FoldChange <- function (cells.1, cells.2, cnt_mat) {
+  
   thresh.min <- 0
-  pct.1 <- round(x = rowSums(x = allCells.data[features, cells.1, 
-                                               drop = FALSE] > thresh.min)/length(x = cells.1), digits = 3)
-  pct.2 <- round(x = rowSums(x = allCells.data[features, cells.2, 
-                                               drop = FALSE] > thresh.min)/length(x = cells.2), digits = 3)
-  data.1 <- mean.fxn(allCells.data[features, cells.1, drop = FALSE])
-  data.2 <- mean.fxn(allCells.data[features, cells.2, drop = FALSE])
+  
+  thres_mat_1 <- cnt_mat[, cells.1, drop = FALSE] > thresh.min
+  thres_mat_2 <- cnt_mat[, cells.2, drop = FALSE] > thresh.min
+  
+  pct.1 <- round(x = rowSums(thres_mat_1)/length(cells.1), digits = 3)
+  pct.2 <- round(x = rowSums(thres_mat_2)/length(cells.2), digits = 3)
+  
+  data.1 <- mean.fxn(thres_mat_1)
+  data.2 <- mean.fxn(thres_mat_2)
+  
   fc <- (data.1 - data.2)
+  
   fc.results <- as.data.frame(x = cbind(fc, pct.1, pct.2))
   colnames(fc.results) <- c("avg_log2FC", "pct.1", "pct.2")
+  
   return(fc.results)
 }
 
 
-perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf, logfc.threshold = 0.25){
+perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
+                          logfc.threshold = 0.25, subset_samples = NULL){
   
   
-  load_as_needed("allCells.metadata")
-  
-  cells.1 <- allCells.metadata$Cell.type %in% ident.1
-  
-  cells.2 <- allCells.metadata$Cell.type %in% ident.2
-  
-  
-  rm("allCells.metadata", envir = .GlobalEnv)
-  
-  load_as_needed("allCells.data")
+  if(is.null(subset_samples)){
+    
+    load_as_needed("allCells.metadata")
+    
+    cells.1 <- allCells.metadata$Cell.type %in% ident.1
+    cells.2 <- allCells.metadata$Cell.type %in% ident.2
+    
+    rm("allCells.metadata", envir = .GlobalEnv)
+    
+    # do not rely on `load_as_needed()` since we don't know what the previous state was
+    allCells.data <- qs::qread(file.path(data_dir, "allCells.data.qs"))
+    
+  } else{
+    
+    stopifnot(length(subset_samples) == 2)
+    
+    load_as_needed("comb_allCells.metadata")
+    
+    cells.1 <- ( comb_allCells.metadata$Cell.type %in% ident.1 ) &
+      ( comb_allCells.metadata$sample_set == subset_samples[[1]] )
+    
+    cells.2 <- ( comb_allCells.metadata$Cell.type %in% ident.2 ) &
+      ( comb_allCells.metadata$sample_set == subset_samples[[2]] )
+    
+    rm("comb_allCells.metadata", envir = .GlobalEnv)
+    
+    
+    # do not rely on `load_as_needed()` since we don't know what the previous state was
+    allCells.data <- qs::qread(file.path(data_dir, "comb_allCells.data.qs"))
+    
+  }
   
   
   expr.1 <- allCells.data[,cells.1]
@@ -83,13 +116,16 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
   # get fold changes
   fc.results <- FoldChange(cells.1 = which(cells.1),
                            cells.2 = which(cells.2),
-                           features = rownames(allCells.data))
+                           cnt_mat = allCells.data)
+  
+  
   
   # filter features
   alpha.min <- pmax(fc.results$pct.1, fc.results$pct.2)
   alpha.diff <- alpha.min - pmin(fc.results$pct.1, fc.results$pct.2)
   features <- rownames(fc.results)[alpha.min >= min.pct &
                                      alpha.diff >= min.diff.pct]
+  
   if (length(features) == 0) {
     warning("No features pass min threshold; returning empty data.frame")
   }
@@ -127,12 +163,32 @@ perform_de_sc <- function(ident.1 , ident.2, min.pct = 0.1, min.diff.pct = -Inf,
 
 
 #~ pseudobulk Wilcoxon ----
-perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
+perform_de_pb_wilcoxon <- function(ident.1, ident.2, subset_samples){
   
-  load_as_needed("pseudobulk_matrix")
+  if(is.null(subset_samples)){
+    
+    pseudobulk_matrix <- qs::qread(file.path(data_dir, "pseudobulk_matrix.qs"))
+    
+    cols.group.1 <- which(startsWith(colnames(pseudobulk_matrix), ident.1))
+    cols.group.2 <- which(startsWith(colnames(pseudobulk_matrix), ident.2))
+    
+    
+  } else{
+    
+    pseudobulk_matrix <- qs::qread(file.path(data_dir, "comb_pseudobulk_matrix.qs"))
+    
+    sample_set <- attr(pseudobulk_matrix, "sample_set")
+    
+    cols.group.1 <- which(startsWith(colnames(pseudobulk_matrix), ident.1) &
+                            sample_set == subset_samples[[1]] )
+    cols.group.2 <- which(startsWith(colnames(pseudobulk_matrix), ident.2) &
+                            sample_set == subset_samples[[2]] )
+    
+  }
   
-  cols.group.1 <- which(startsWith(colnames(pseudobulk_matrix[,]), ident.1))
-  cols.group.2 <- which(startsWith(colnames(pseudobulk_matrix[,]), ident.2))
+  
+  
+  
   
   data.use <- pseudobulk_matrix[, c(cols.group.1,cols.group.2)]
   
@@ -182,20 +238,27 @@ perform_de_pb_edger <- function(ident.1, ident.2, ...){
 
 
 #~ Dispatch ----
-perform_de <- function(ident.1, ident.2, method, ...){
+perform_de <- function(ident.1, ident.2, method, subset_samples = NULL){
   
   cat("DE of ", ident.1," vs ",ident.2,"\n")
   # dispatch to proper test
   if(method == "Wilcoxon on single cells"){
+    
     print("sc Wilcoxon")
-    tableDEX <- perform_de_sc(ident.1 , ident.2, ...)
+    tableDEX <- perform_de_sc(ident.1 , ident.2, subset_samples = subset_samples)
+    
   } else if(method == "Pseudobulk: Wilcoxon"){
+    
     print("pb Wilcoxon")
-    tableDEX <- perform_de_pb_wilcoxon(ident.1 , ident.2, ...)
+    tableDEX <- perform_de_pb_wilcoxon(ident.1 , ident.2, subset_samples = subset_samples)
+    
   } else if(method == "Pseudobulk: edgeR pairwise exact test"){
+    
     print("pb edgeR")
-    tableDEX <- perform_de_pb_edger(ident.1 , ident.2, ...)
+    tableDEX <- perform_de_pb_edger(ident.1 , ident.2)
+    
   } else{
+    
     print("Test not recognized: ", method)
     stop("Test not recognized: ", method)
   }

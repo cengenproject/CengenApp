@@ -362,6 +362,7 @@ ui <- fluidPage(
     
     
     ### Find Differential Expression between Cell Types Panel ----
+    
     tabPanel(
       "Find Differential Expression between Cell Types",
       fluidPage(
@@ -418,6 +419,67 @@ ui <- fluidPage(
       )
     ),
     
+    
+    ###Sex DE ----
+    
+    if(dataset == "male"){
+      
+      tabPanel(
+        "Male vs hermaphrodite DE",
+        fluidPage(
+          hr(),
+          h6("Find differentially expressed genes between male and hermaphrodite cell types or two groups of cell types."),
+          h6("Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."),
+          warning_msg,
+          hr(),
+          fluidRow(
+            column(
+              4,
+              selectInput(
+                inputId = "SDEmale",
+                label = "Select male cells",
+                choices = male_all_cell_types,
+                selected = "AVL",
+                multiple = TRUE
+              ),
+              selectInput(
+                inputId = "SDEherm",
+                label = "Select hermaphrodite cells",
+                choices = herm_all_cell_types,
+                selected = c("RME_DV","RME_LR"),
+                multiple = TRUE
+              ),
+              actionButton("SDEbutton", "Calculate DEX", icon = icon("hand-point-right"))
+              
+            ),
+            column(
+              3,
+              selectInput(
+                inputId = "SDEtest",
+                label = "Select statistical test",
+                choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon")
+              ),
+              textInput(
+                inputId = "SDEnb_display",
+                label = "Show top X genes",
+                value = "100"
+              )
+              
+            )
+          ),
+          br(),
+          htmlOutput("SDEpseudobulk_metadata", container = h6),
+          br(),
+          
+          span(textOutput("SDEtext_error_dex"), style =
+                 "color:red"),
+          br(),
+          DT::dataTableOutput("SDEMarkTable_Batch"),
+          downloadButton('SDEdownload', "Download table"),
+          htmlOutput("SDElegend_de_columns", container = h6)
+        )
+      )
+    },
     
     
     ### Heatmaps of gene expression Panel ----
