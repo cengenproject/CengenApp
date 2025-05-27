@@ -584,15 +584,22 @@ server <- function(input, output) {
       if (nrow(tableDEX) > 0) {
         
         output$MarkTable_Batch <- DT::renderDataTable({
+          
           DT::datatable(
             tableDEX |> head( as.numeric(input$DEnb_display) ),
             options = list( pageLength = as.numeric(input$DEnb_display) ),
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
-          ) |> formatStyle(c(1:9), color = "black", backgroundColor = 'white') |>
-            formatRound(columns = c('avg_logFC'), digits = 1) |>
-            formatSignif(columns = c('p_val', 'FDR'), digits = 2)
+          ) |>
+            formatStyle(c(1:9), color = "black", backgroundColor = 'white') |>
+            formatRound(columns = intersect(c("avg_logFC", "mean_1", "mean_2", "logCPM"),
+                                            colnames(tableDEX)),
+                                            digits = 1) |>
+            formatSignif(columns =intersect(c("p_val", "FDR"),
+                                            colnames(tableDEX)),
+                                            digits = 2)
+          
         })
         
         output$downloadDEX <-

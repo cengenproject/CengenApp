@@ -149,18 +149,14 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, ...){
                   })
   
   FDR <- p.adjust(p_val, method = "BH")
+  
   data.frame(gene_id = rownames(pseudobulk_matrix),
              mean_1 = mean_1,
              mean_2 = mean_2,
-             log2FC = log2FC,
+             avg_logFC = log2FC,
              p_val = p_val,
              FDR = FDR) |>
-    dplyr::arrange(FDR, p_val, desc(abs(log2FC))) |>
-    mutate(p_val = signif(p_val, 2),
-           FDR = signif(FDR, 2),
-           avg_logFC = round(log2FC, 1),
-           across(contains("mean"),
-                  ~ round(.x, 1)))
+    dplyr::arrange(FDR, p_val, desc(abs(avg_logFC)))
 }
 
 
@@ -177,11 +173,9 @@ perform_de_pb_edger <- function(ident.1, ident.2, ...){
     dplyr::mutate(p_val_adj = p.adjust(PValue, method = "BH")) |>
     dplyr::rename(gene_id = rowname,
                   p_val = PValue,
-                  FDR = p_val_adj) |>
-    dplyr::arrange(FDR, p_val) |>
-    dplyr::mutate(p_val = signif(p_val, 2),
-                  FDR = signif(FDR, 2),
-                  avg_logFC = round(logFC, 1))
+                  FDR = p_val_adj,
+                  avg_logFC = logFC) |>
+    dplyr::arrange(FDR, p_val)
 }
 
 
