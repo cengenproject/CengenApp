@@ -30,3 +30,4 @@ data/052225_male/male/ths.qs
 data/052225_male/male/comb_allCells.data.qs
 data/052225_male/male/comb_allCells.metadata.qs
 data/052225_male/male/comb_pseudobulk_matrix.qs
+data/052225_male/male/herm_all_cell_types.qs

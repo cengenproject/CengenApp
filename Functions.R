@@ -26,7 +26,7 @@ load_as_needed("all_neuron_types")
 
 if(dataset == "male"){
   male_all_cell_types <- qs::qread(file.path(data_dir, "all_cell_types.qs"))
-  herm_all_cell_types <- qs::qread(file.path(data_dir_herm, "all_cell_types.qs"))
+  herm_all_cell_types <- qs::qread(herm_all_cell_types_path)
 }
 
 

@@ -96,10 +96,7 @@ Adult app:
 rsconnect::deployApp(appDir = ".", appFileManifest = "deployment/manifest_adult.txt", appName = "adult", appTitle = "adult app", upload = TRUE)
 ```
 
-
-
-
-
-
-
-
+Male app:
+```
+rsconnect::deployApp(appDir = ".", appFileManifest = "deployment/manifest_male.txt", appName = "male", appTitle = "male app", upload = TRUE)
+```
