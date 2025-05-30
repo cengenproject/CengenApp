@@ -276,7 +276,7 @@
 
 #~ herm ----
 
-# data_dir <- "data/052225_male/herm/"
+# data_dir <- "data/052225_herm"
 # 
 # list.files(data_dir, pattern = "^herm") |>
 #   purrr::walk(~ file.rename(
@@ -285,37 +285,37 @@
 #   ))
 
 
-# file.rename("data/052225_male/herm/all.TPM.raw_th.qs",
-#             "data/052225_male/herm/all.TPM.raw_th.qs.bak")
+# file.rename("data/052225_herm/all.TPM.raw_th.qs",
+#             "data/052225_herm/all.TPM.raw_th.qs.bak")
 # 
-# all.TPM.raw_th <- qs::qread("data/052225_male/herm/all.TPM.raw_th.qs.bak")
+# all.TPM.raw_th <- qs::qread("data/052225_herm/all.TPM.raw_th.qs.bak")
 # 
 # all.TPM.raw_th |>
 #   dplyr::rename(id = X) |>
-#   qs::qsave("data/052225_male/herm/all.TPM.raw_th.qs")
+#   qs::qsave("data/052225_herm/all.TPM.raw_th.qs")
 
 
 
-# file.rename("data/052225_male/herm/ths.qs",
-#             "data/052225_male/herm/ths.qs.bak")
-# ths <- qs::qread("data/052225_male/herm/ths.qs.bak")
+# file.rename("data/052225_herm/ths.qs",
+#             "data/052225_herm/ths.qs.bak")
+# ths <- qs::qread("data/052225_herm/ths.qs.bak")
 # 
 # ths |>
 #   dplyr::rename(id = X) |>
-#   qs::qsave("data/052225_male/herm/ths.qs")
+#   qs::qsave("data/052225_herm/ths.qs")
 
 
 
 
-# file.rename("data/052225_male/herm/TPM.raw.scaled.long.qs",
-#             "data/052225_male/herm/TPM.raw.scaled.long.qs.bak")
+# file.rename("data/052225_herm/TPM.raw.scaled.long.qs",
+#             "data/052225_herm/TPM.raw.scaled.long.qs.bak")
 # 
-# TPM.raw.scaled.long <- qs::qread("data/052225_male/herm/TPM.raw.scaled.long.qs.bak")
+# TPM.raw.scaled.long <- qs::qread("data/052225_herm/TPM.raw.scaled.long.qs.bak")
 # 
 # TPM.raw.scaled.long |>
 #   dplyr::mutate(tissue = dplyr::if_else(tissue == "Hypodermis",
 #                                         "Epidermis", tissue)) |>
-#   qs::qsave("data/052225_male/herm/TPM.raw.scaled.long.qs")
+#   qs::qsave("data/052225_herm/TPM.raw.scaled.long.qs")
 
 
 
@@ -323,7 +323,7 @@
 #~ Combine male-herm ----
 
 # male_allCells.metadata <- qs::qread("data/052225_male/male/allCells.metadata.qs")
-# herm_allCells.metadata <- qs::qread("data/052225_male/herm/allCells.metadata.qs")
+# herm_allCells.metadata <- qs::qread("data/052225_herm/allCells.metadata.qs")
 # 
 # male_allCells.metadata$sample_set <- "male"
 # herm_allCells.metadata$sample_set <- "herm"
@@ -342,7 +342,7 @@
 
 
 # male_allCells.data <- qs::qread("data/052225_male/male/allCells.data.qs")
-# herm_allCells.data <- qs::qread("data/052225_male/herm/allCells.data.qs")
+# herm_allCells.data <- qs::qread("data/052225_herm/allCells.data.qs")
 # 
 # # match rows (some genes are absent from male, others from herma)
 # all_rownames <- union(rownames(male_allCells.data),
@@ -412,7 +412,7 @@
 
                     
 # male_pseudobulk_matrix <- qs::qread("data/052225_male/male/pseudobulk_matrix.qs")
-# herm_pseudobulk_matrix <- qs::qread("data/052225_male/herm/pseudobulk_matrix.qs")
+# herm_pseudobulk_matrix <- qs::qread("data/052225_herm/pseudobulk_matrix.qs")
 # 
 # # colnames are different
 # stopifnot(length(intersect(
