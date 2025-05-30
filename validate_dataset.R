@@ -13,6 +13,7 @@ validate_dataset("data/2025-03-17_L1/")
 validate_dataset("data/052225_herm/")
 validate_dataset("data/052225_male/male/")
 
+dir_male <- "data/052225_male/male/"
 
 
 validate_dataset <- function(data_dir){
@@ -314,7 +315,90 @@ validate_dataset <- function(data_dir){
 
 
 
-
+# extra checks for male dataset
+validate_male_dataset <- function(dir_male){
+  
+  # File list ----
+  expected_files <- c(
+    "comb_allCells.data.qs", "comb_allCells.metadata.qs", "comb_edger_precomputed.qs",
+    "comb_pseudobulk_matrix.qs", "herm_all_cell_types.qs"
+  )
+  
+  stopifnot(all(
+    expected_files %in% list.files(dir_male)
+  ))
+  
+  all_cell_types_male <- qs::qread(file.path(dir_male, "all_cell_types.qs"))
+  all_cell_types_herm <- qs::qread(file.path(dir_male, "herm_all_cell_types.qs"))
+  
+  gene_list <- qs::qread(file.path(dir_male, "gene_list.qs"))
+  
+  
+  #~ check ----
+  
+  comb_allCells.data <- qs::qread(file.path(dir_male, "comb_allCells.data.qs"))
+  
+  comb_allCells.metadata <- qs::qread(file.path(dir_male, "comb_allCells.metadata.qs"))
+  
+  comb_edger_precomputed <- qs::qread(file.path(dir_male, "comb_edger_precomputed.qs"))
+  
+  comb_pseudobulk_matrix <- qs::qread(file.path(dir_male, "comb_pseudobulk_matrix.qs"))
+  
+  
+  #~~ genes ----
+  
+  # comb_allCells.data
+  stopifnot(all(
+    rownames(comb_allCells.data) %in% gene_list$gene_id
+  ))
+  # comb_pseudobulk_matrix
+  stopifnot(all(
+    rownames(comb_pseudobulk_matrix) %in% gene_list$gene_id
+  ))
+  stopifnot(all(
+    rownames(comb_pseudobulk_matrix) %in% rownames(comb_allCells.data)
+  ))
+  # comb_edger_precomputed
+  stopifnot(all(
+    rownames(comb_edger_precomputed$counts) %in% gene_list$gene_id
+  ))
+  stopifnot(all(
+    rownames(comb_edger_precomputed$counts) %in% rownames(comb_allCells.data)
+  ))
+  
+  
+  
+  #~~ cell names ----
+  
+  # comb_allCells.data
+  stopifnot(identical(
+    rownames(comb_allCells.metadata),
+    colnames(comb_allCells.data)
+  ))
+  
+  # comb_pseudobulk_matrix
+  
+  # I would have expected them identical
+  stopifnot(all(
+    unique(as.character(comb_edger_precomputed$samples$group))  %in%
+          unique(paste0(comb_allCells.metadata$Cell.type, "_", comb_allCells.metadata$Enriched.sex))
+  ))
+  
+  # stopifnot(identical(
+  #   paste0(comb_allCells.metadata$Cell.type, "_", comb_allCells.metadata$Enriched.sex) |> unique() |> sort(),
+  #   as.character(comb_edger_precomputed$samples$group) |> unique() |> sort()
+  # ))
+  
+  # comb_edger_precomputed
+  stopifnot(identical(
+    colnames(comb_edger_precomputed$counts),
+    comb_edger_precomputed$samples$sample_id
+  ))
+  
+  
+  
+  
+}
 
 
 
