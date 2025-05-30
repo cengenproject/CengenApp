@@ -974,7 +974,9 @@ server <- function(input, output, session) {
              tissue = factor(tissue,
                              levels = ordered_tissues)) |>
       arrange(tissue, is_pharyngeal) |>
-      mutate(cell.type = fct_inorder(cell.type))
+      mutate(cell.type = fct_inorder(cell.type)) |>
+      select(- is_pharyngeal) |>
+      as.data.frame()
     
     
     
