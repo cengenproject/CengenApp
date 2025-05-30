@@ -393,6 +393,31 @@ validate_male_dataset <- function(dir_male){
   ))
   
   
+  # comb_pseudobulk_matrix
+  
+  stopifnot(all(
+    (comb_edger_precomputed$samples$sample_id |>
+       str_replace("_Herm_", "_") |>
+       str_replace("_Male_", "_")) %in%
+      colnames(comb_pseudobulk_matrix)
+  ))
+  
+  
+ 
+  
+  stopifnot(all(
+    sapply(colnames(comb_pseudobulk_matrix),
+           \(cell) any(startsWith(cell, union(all_cell_types_herm, all_cell_types_male))))
+  ))
+  
+  # not true: some cell types have been removed from pseudobulk (namely Unknown_spermatheca_or_uterine_cell, Vulval_muscle_vm2, CP0, HOA)
+  # stopifnot(all(
+  #   sapply(union(all_cell_types_herm, all_cell_types_male),
+  #          \(ct) any(startsWith(colnames(comb_pseudobulk_matrix), ct)))
+  # ))
+  
+  
+  
   
 }
 

@@ -188,6 +188,19 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, subset_samples){
   
   
   
+  idents <- c(ident.1, ident.2)
+  missing_idents <- c(length(cols.group.1) == 0, length(cols.group.2) == 0)
+  
+  if(any(missing_idents)) {
+    
+    error_msg <- paste0("Error: cell type(s) not available: ", 
+                        paste(idents[missing_idents], collapse = " and "))
+    
+    res <- data.frame(gene_id = character(0))
+    attr(res, "error_message") <- error_msg
+    
+    return(res)
+  }
   
   
   data.use <- pseudobulk_matrix[, c(cols.group.1,cols.group.2)]
