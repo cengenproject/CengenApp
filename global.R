@@ -7,7 +7,7 @@ if(length(config) == 1){
 } else if(length(config) > 1){
   
   # here set default file
-  source("deployment/config_male.R")
+  source("deployment/config_adult.R")
   
 } else{
   stop("Configuration file not found")

@@ -1,5 +1,6 @@
 # if any of this fails, there will be harder to diagnose problems in the app.
 
+## Inits ----
 
 ordered_tissues <- local({
   xx <- parse("global.R")
@@ -9,9 +10,8 @@ ordered_tissues <- local({
 
 validate_dataset("data/2025-03-21_L4/")
 validate_dataset("data/2025-03-17_L1/")
-validate_dataset("data/010324_adult/")
+validate_dataset("data/052225_herm/")
 validate_dataset("data/052225_male/male/")
-validate_dataset("data/052225_male/herm/")
 
 
 

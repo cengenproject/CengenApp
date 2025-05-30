@@ -5,7 +5,7 @@ dataset <- "adult"
 
 
 
-data_dir <- "data/010324_adult/"
+data_dir <- "data/052225_herm/"
 
 
 unreliable_gene_ids <- NA
