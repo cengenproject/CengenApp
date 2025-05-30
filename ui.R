@@ -41,12 +41,16 @@ source("Functions.R")
 
 
 
-warning_msg <- h6( paste0(
-  "WARNING: Expression values for ",
-  filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", "),
-  " are unreliable as they have been overexpressed to generate transgenic strains."
-),
-style="color:orange")
+warning_msg <- if(!is.na(unreliable_gene_ids)){
+  p( paste0(
+    "WARNING: Expression values for ",
+    filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", "),
+    " are unreliable as they have been overexpressed to generate transgenic strains."
+  ),
+  style="color:orange")
+} else{
+  ""
+}
 
 
 ## UI ----
@@ -62,14 +66,12 @@ ui <- fluidPage(
     tags$style(
       HTML(
         ".shiny-output-error-validation {color: red;}",
-        ".delineated-box {border: 1px dotted grey; margin-top: 10px; padding: 10px}",
-        ".highlighted-box {border: 2px solid #df691a;
-                          margin-top: 10px;
-                          padding: 10px;
-                          background-color: #E5E8E8;
-                          color: black;
-                          width: 60%;
-                          margin: auto; }"
+        "html {
+          font-size: 14px !important;
+        }",
+        "body {
+          padding-bottom: 100px;
+        }"
       )
     ),
     
@@ -77,7 +79,7 @@ ui <- fluidPage(
     
   ),
   
-  theme = "Theme.min.css",
+  theme = "sandstone_bootstrap.min.css",
   
   add_busy_spinner(
     spin = "double-bounce",
@@ -92,25 +94,30 @@ ui <- fluidPage(
   
   #~ App header ----
   div(
-    tags$img(src = icon_big, style = "margin: 10px"),
-    titlePanel(
-      paste(dataset, "CeNGEN -- Discovery and analysis of the C. elegans Neuronal Gene Expression Network")
+    tags$img(src = icon_big, style = "margin: 15px"),
+    div(
+      titlePanel(
+        paste(dataset, "CeNGEN")
+      ),
+      p("Discovery and analysis of the C. elegans Neuronal Gene Expression Network", 
+        style = "font-size: 1.2em; color: #666; margin-top: -10px; margin-bottom: 0;"),
+      style = "flex: 1;"
     ),
-    style = "display: flex; align-items: center;"
+    style = "display: flex; align-items: center;  margin-bottom: 30px; padding: 25px 0;"
   ),
   
   div(
     "This app enables analysis of the ",
     
     tags$img(src = paste0(dataset, ".png")),
-    strong(dataset), " dataset. Other datasets: ",
+    dataset, " dataset. Other datasets: ",
     HTML(paste0('<img src="',other_apps$name,'.png"/> <a href="https://cengen.shinyapps.io/',other_apps$url,'">',other_apps$name,'</a>',
                 collapse = ", ")),
     tags$p("Additional details and documentation ",
            tags$a("on the cengen.org page",
                   href = "https://www.cengen.org/single-cell-rna-seq/"),
            "."),
-    class = "highlighted-box"
+    class = "alert alert-secondary"
     
   ),
   hr(),
@@ -124,12 +131,15 @@ ui <- fluidPage(
       "Gene expression by cell type",
       fluidPage(
         hr(),
-        h6(
-          "Find all genes expressed in a given cell type, or all cell types expressing a given gene (or group of genes)."
+        p(
+          "Find all genes expressed in a given cell type, or all cell types expressing a given gene (or group of genes).",
+          br(),
+          "Select one of four thresholds for expression:\n",
+          br(),
+          "1 (least stringent) to 4 (most stringent) or select unfiltered data\n",
+          br(),
+          "Choose All Cells Unfiltered to query the entire unfiltered dataset, including non-neuronal cells"
         ),
-        h6("Select one of four thresholds for expression:"),
-        h6("1 (least stringent) to 4 (most stringent) or select unfiltered data"),
-        h6("Choose All Cells Unfiltered to query the entire unfiltered dataset, including non-neuronal cells"),
         hr(),
         fluidRow(
           column(1),
@@ -147,7 +157,7 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
-            actionButton("TCell", "Expressed genes", icon = icon("hand-point-right"))
+            actionButton("TCell", "Expressed genes", class = "btn-primary")
             
           ),
           
@@ -165,7 +175,7 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
-            actionButton("TGene", "Which cell types", icon = icon("hand-point-right"))
+            actionButton("TGene", "Which cell types", class = "btn-primary")
           ),
           column(
             2,
@@ -222,7 +232,7 @@ ui <- fluidPage(
       "Find markers based on percentage of expression",
       fluidPage(
         hr(),
-        h6(
+        p(
           "Find genes expressed in one group of cell types and not in another group based on the percentages of cells expressing the gene."
         ),
         warning_msg,
@@ -241,7 +251,7 @@ ui <- fluidPage(
               label = "Minimum percentage of cells expressing the gene",
               value = 65
             ),
-            actionButton("Filter", "Run query", icon = icon("hand-point-right"))
+            actionButton("Filter", "Run query", class = "btn-primary")
             
           ),
           #column(width = 1, offset = 0, style='padding:5px;'),
@@ -263,26 +273,30 @@ ui <- fluidPage(
         fluidRow(
           #column(1),
           column(4,
-                 br(), 
                  div(
-                   "Expressed in group 1",
+                   h5("Expressed in group 1", class = "card-title"),
                    DT::dataTableOutput("YesExpressed"),
-                   class = "delineated-box"
-                 )),
+                   class = "card-body",
+                   style = "overflow-x: auto;"
+                 ),
+                 class = "card"),
           column(4,
-                 br(),
                  div(
-                   "Not expressed in group 2",
+                   h5("Not expressed in group 2", class = "card-title"),
                    DT::dataTableOutput("NoExpressed"),
-                   class = "delineated-box"
-                 )),
+                   class = "card-body",
+                   style = "overflow-x: auto;"
+                 ),
+                 class = "card"),
           
           column(4,
                  div(
-                   "Result (expressed in group 1, not group 2)",
+                   h5("Result (expressed in group 1, not group 2)", class = "card-title"),
                    DT::dataTableOutput("Result"),
-                   class = "delineated-box"
-                 ))
+                   class = "card-body"
+                 ),
+                 class = "card"),
+          class = "mt-3"
         )
       )
     ),
@@ -291,11 +305,12 @@ ui <- fluidPage(
       "Enriched Genes by cell type",
       fluidPage(
         hr(),
-        h6(
-          "Find genes differentially expressed in one cell type compared to all other cells in the dataset (neurons only or all cell types). 
-            This is NOT a comprehensive list of genes detected in each cell type."
+        p(
+          "Find genes differentially expressed in one cell type compared to all other cells in the dataset (neurons only or all cell types).",
+          "This is NOT a comprehensive list of genes detected in each cell type.",
+          br(),
+          "Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."
         ),
-        h6("Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."),
         textOutput("TopMarkers cell plot"),
         selectInput(
           inputId = "dataset2",
@@ -318,14 +333,12 @@ ui <- fluidPage(
           warning_msg,
           DT::dataTableOutput("MarkTable"),
           downloadButton('downloadMarkers', "Download table"),
-          h6("HEADER LEGEND:"),
-          h6(
-            "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
-          ),
-          h6(
-            "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
-          ),
-          h6(
+          p("HEADER LEGEND:",
+            br(),
+            "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively.",
+            br(),
+            "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group",
+            br(),
             "avg_logFC: Log of the expression fold change between group 1 and group 2."
           )
         ),
@@ -346,14 +359,12 @@ ui <- fluidPage(
           
           DT::dataTableOutput("MarkTable2"),
           downloadButton('downloadMarkers2', "Download table"),
-          h6("HEADER LEGEND:"),
-          h6(
-            "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively."
-          ),
-          h6(
-            "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group"
-          ),
-          h6(
+          p("HEADER LEGEND:",
+            br(),
+            "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively.",
+            br(),
+            "pct.1 and pct.2: The percentage of cells where the gene is detected in the first or second group",
+            br(),
             "avg_logFC: Log of the expression fold change between group 1 and group 2."
           )
         )
@@ -367,8 +378,10 @@ ui <- fluidPage(
       "Find Differential Expression between Cell Types",
       fluidPage(
         hr(),
-        h6("Find differentially expressed genes between two cell types or two groups of cell types."),
-        h6("Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."),
+        p("Find differentially expressed genes between two cell types or two groups of cell types.",
+          br(),
+          "Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."
+        ),
         warning_msg,
         hr(),
         fluidRow(
@@ -388,7 +401,7 @@ ui <- fluidPage(
               selected = c("RME_DV","RME_LR"),
               multiple = TRUE
             ),
-            actionButton("DEbutton", "Calculate DEX", icon = icon("hand-point-right"))
+            actionButton("DEbutton", "Calculate DEX", class = "btn-primary")
             
           ),
           column(
@@ -428,8 +441,11 @@ ui <- fluidPage(
         "Male vs hermaphrodite DE",
         fluidPage(
           hr(),
-          h6("Find differentially expressed genes between male and hermaphrodite cell types or two groups of cell types."),
-          h6("Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."),
+          p(
+            "Find differentially expressed genes between male and hermaphrodite cell types or two groups of cell types.",
+            br(),
+            "Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."
+          ),
           warning_msg,
           hr(),
           fluidRow(
@@ -449,7 +465,7 @@ ui <- fluidPage(
                 selected = c("RME_DV","RME_LR"),
                 multiple = TRUE
               ),
-              actionButton("SDEbutton", "Calculate DEX", icon = icon("hand-point-right"))
+              actionButton("SDEbutton", "Calculate DEX", class = "btn-primary")
               
             ),
             column(
@@ -487,7 +503,7 @@ ui <- fluidPage(
       "Heatmaps of gene expression",
       fluidPage(
         hr(),
-        h6(
+        p(
           "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
         ),
         warning_msg,
@@ -514,7 +530,9 @@ ui <- fluidPage(
         ),
         
         actionButton(
-          "HMbutton_from_list","Plot heatmap from list",
+          "HMbutton_from_list",
+          "Plot heatmap from list",
+          class = "btn-primary",
           icon = icon("hand-point-right")
           
           
@@ -531,11 +549,12 @@ ui <- fluidPage(
           column(3,   actionButton(
             "HMbutton_from_file",
             "Plot heatmap from file",
+            class = "btn-secondary",
             icon = icon("hand-point-right")
           ))
         ),
         
-        h6(
+        p(
           "You can identify circles by clicking on them."
         ),
         
