@@ -457,7 +457,7 @@ ui <- fluidPage(
               selectInput(
                 inputId = "SDEtest",
                 label = "Select statistical test",
-                choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon")
+                choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test")
               ),
               textInput(
                 inputId = "SDEnb_display",

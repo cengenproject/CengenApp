@@ -218,9 +218,24 @@ perform_de_pb_wilcoxon <- function(ident.1, ident.2, subset_samples){
 
 
 #~ pseudobulk edgeR ----
-perform_de_pb_edger <- function(ident.1, ident.2, ...){
+perform_de_pb_edger <- function(ident.1, ident.2, subset_samples = subset_samples){
   
-  load_as_needed("edger_precomputed")
+  
+  if(is.null(subset_samples)){
+    
+    edger_precomputed <- qs::qread(file.path(data_dir, "edger_precomputed.qs"))
+    
+    
+  } else{
+    
+    edger_precomputed <- qs::qread(file.path(data_dir, "comb_edger_precomputed.qs"))
+    
+    ident.1 <- paste0(ident.1, "_", str_to_sentence(subset_samples[[1]]))
+    
+    ident.2 <- paste0(ident.2, "_", str_to_sentence(subset_samples[[2]]))
+     
+  }
+  
   
   et <- exactTest(edger_precomputed, pair = c(ident.2, ident.1))
   
@@ -255,7 +270,7 @@ perform_de <- function(ident.1, ident.2, method, subset_samples = NULL){
   } else if(method == "Pseudobulk: edgeR pairwise exact test"){
     
     print("pb edgeR")
-    tableDEX <- perform_de_pb_edger(ident.1 , ident.2)
+    tableDEX <- perform_de_pb_edger(ident.1 , ident.2, subset_samples = subset_samples)
     
   } else{
     
