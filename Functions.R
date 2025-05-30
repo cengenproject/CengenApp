@@ -237,6 +237,21 @@ perform_de_pb_edger <- function(ident.1, ident.2, subset_samples = subset_sample
   }
   
   
+  idents <- c(ident.1, ident.2)
+  missing_idents <- !(idents %in% edger_precomputed$samples$group)
+  
+  if(any(missing_idents)) {
+    
+    error_msg <- paste0("Error: cell type(s) not available: ", 
+                        paste(idents[missing_idents], collapse = " and "))
+    
+    res <- data.frame(gene_id = character(0))
+    attr(res, "error_message") <- error_msg
+    
+    return(res)
+  }
+  
+  
   et <- exactTest(edger_precomputed, pair = c(ident.2, ident.1))
   
   et$table |>

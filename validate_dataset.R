@@ -334,7 +334,7 @@ validate_male_dataset <- function(dir_male){
   gene_list <- qs::qread(file.path(dir_male, "gene_list.qs"))
   
   
-  #~ check ----
+  #~ load ----
   
   comb_allCells.data <- qs::qread(file.path(dir_male, "comb_allCells.data.qs"))
   
@@ -351,6 +351,7 @@ validate_male_dataset <- function(dir_male){
   stopifnot(all(
     rownames(comb_allCells.data) %in% gene_list$gene_id
   ))
+  
   # comb_pseudobulk_matrix
   stopifnot(all(
     rownames(comb_pseudobulk_matrix) %in% gene_list$gene_id
@@ -358,6 +359,7 @@ validate_male_dataset <- function(dir_male){
   stopifnot(all(
     rownames(comb_pseudobulk_matrix) %in% rownames(comb_allCells.data)
   ))
+  
   # comb_edger_precomputed
   stopifnot(all(
     rownames(comb_edger_precomputed$counts) %in% gene_list$gene_id
@@ -376,25 +378,19 @@ validate_male_dataset <- function(dir_male){
     colnames(comb_allCells.data)
   ))
   
-  # comb_pseudobulk_matrix
   
-  # I would have expected them identical
+  # comb_edger_precomputed
+  
+  # some cell types are filtered out of edgeR object (when too few cells)
   stopifnot(all(
     unique(as.character(comb_edger_precomputed$samples$group))  %in%
           unique(paste0(comb_allCells.metadata$Cell.type, "_", comb_allCells.metadata$Enriched.sex))
   ))
   
-  # stopifnot(identical(
-  #   paste0(comb_allCells.metadata$Cell.type, "_", comb_allCells.metadata$Enriched.sex) |> unique() |> sort(),
-  #   as.character(comb_edger_precomputed$samples$group) |> unique() |> sort()
-  # ))
-  
-  # comb_edger_precomputed
   stopifnot(identical(
     colnames(comb_edger_precomputed$counts),
     comb_edger_precomputed$samples$sample_id
   ))
-  
   
   
   

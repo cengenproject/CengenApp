@@ -800,8 +800,17 @@ server <- function(input, output, session) {
           )
         
       } else {
+        
         output$SDEMarkTable_Batch <- DT::renderDataTable({NULL})
-        output$SDEtext_error_dex <- renderText({"No feature passes the logfc threshold"})
+        
+        if(! is.null(attr(tableDEX, "error_message")) ){
+          
+          output$SDEtext_error_dex <- renderText({attr(tableDEX, "error_message")})
+        } else{
+          
+          output$SDEtext_error_dex <- renderText({"No feature passes the logfc threshold"})
+        }
+        
       }
       
       
