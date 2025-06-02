@@ -41,7 +41,7 @@ source("Functions.R")
 
 
 
-warning_msg <- if(!is.na(unreliable_gene_ids)){
+warning_msg <- if(!all(is.na(unreliable_gene_ids))){
   p( paste0(
     "WARNING: Expression values for ",
     filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", "),
@@ -79,7 +79,7 @@ ui <- fluidPage(
     
   ),
   
-  theme = "sandstone_bootstrap.min.css",
+  theme = "startbs_landing_styles.css",
   
   add_busy_spinner(
     spin = "double-bounce",
@@ -117,7 +117,7 @@ ui <- fluidPage(
            tags$a("on the cengen.org page",
                   href = "https://www.cengen.org/single-cell-rna-seq/"),
            "."),
-    class = "alert alert-secondary"
+    class = "alert alert-primary"
     
   ),
   hr(),
@@ -157,7 +157,7 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
-            actionButton("TCell", "Expressed genes", class = "btn-primary")
+            actionButton("TCell", "Expressed genes", class = "btn-info")
             
           ),
           
@@ -175,7 +175,7 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered"),
               selected = 2
             ),
-            actionButton("TGene", "Which cell types", class = "btn-primary")
+            actionButton("TGene", "Which cell types", class = "btn-info")
           ),
           column(
             2,
@@ -194,7 +194,8 @@ ui <- fluidPage(
               choices = c(1:4, "Unfiltered", "All Cells Unfiltered" ),
               selected = 2
             ),
-            downloadButton("TGeneBatch", "Download batch"),
+            downloadButton("TGeneBatch", "Download batch",
+                           class = "btn-secondary"),
             span(textOutput("textb"), style =
                    "color:red")
             
@@ -210,7 +211,8 @@ ui <- fluidPage(
             span(textOutput("Error1"), style ="color:red"),
             DT::dataTableOutput("Tcell_name_table"),
             br(),
-            uiOutput("get_download_gene")
+            uiOutput("get_download_gene",
+                     class = "btn-secondary")
           ),
           #column(width = 1, offset = 0, style='padding:5px;'),
           column(
@@ -219,7 +221,8 @@ ui <- fluidPage(
             DT::dataTableOutput("Tgene_name_table"),
             br(),
             #downloadButton('downloadCell', "Download table"),
-            uiOutput("get_download_cell"),
+            uiOutput("get_download_cell",
+                     class = "btn-secondary"),
             span(textOutput("text1"), style =
                    "color:red")
           )
@@ -251,7 +254,7 @@ ui <- fluidPage(
               label = "Minimum percentage of cells expressing the gene",
               value = 65
             ),
-            actionButton("Filter", "Run query", class = "btn-primary")
+            actionButton("Filter", "Run query", class = "btn-info")
             
           ),
           #column(width = 1, offset = 0, style='padding:5px;'),
@@ -267,7 +270,8 @@ ui <- fluidPage(
               label = "Maximum percentage of cells expressing the gene",
               value = 2
             ),
-            downloadButton('downloadQuery', "Download table")
+            downloadButton('downloadQuery', "Download table",
+                           class = "btn-secondary")
           )
         ),
         fluidRow(
@@ -332,7 +336,8 @@ ui <- fluidPage(
           ),
           warning_msg,
           DT::dataTableOutput("MarkTable"),
-          downloadButton('downloadMarkers', "Download table"),
+          downloadButton('downloadMarkers', "Download table",
+                         class = "btn-secondary"),
           p("HEADER LEGEND:",
             br(),
             "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively.",
@@ -358,7 +363,8 @@ ui <- fluidPage(
           warning_msg,
           
           DT::dataTableOutput("MarkTable2"),
-          downloadButton('downloadMarkers2', "Download table"),
+          downloadButton('downloadMarkers2', "Download table",
+                         class = "btn-secondary"),
           p("HEADER LEGEND:",
             br(),
             "p-val and p_val_adj: nominal and adjusted P-values of the test, respectively.",
@@ -401,7 +407,7 @@ ui <- fluidPage(
               selected = c("RME_DV","RME_LR"),
               multiple = TRUE
             ),
-            actionButton("DEbutton", "Calculate DEX", class = "btn-primary")
+            actionButton("DEbutton", "Calculate DEX", class = "btn-info")
             
           ),
           column(
@@ -422,7 +428,8 @@ ui <- fluidPage(
                "color:red"),
         br(),
         DT::dataTableOutput("MarkTable_Batch"),
-        downloadButton('downloadDEX', "Download table"),
+        downloadButton('downloadDEX', "Download table",
+                       class = "btn-secondary"),
         htmlOutput("legend_de_columns", container = h6)
       )
     ),
@@ -460,7 +467,7 @@ ui <- fluidPage(
                 selected = c("RME_DV","RME_LR"),
                 multiple = TRUE
               ),
-              actionButton("SDEbutton", "Calculate DEX", class = "btn-primary")
+              actionButton("SDEbutton", "Calculate DEX", class = "btn-info")
               
             ),
             column(
@@ -481,7 +488,8 @@ ui <- fluidPage(
                  "color:red"),
           br(),
           DT::dataTableOutput("SDEMarkTable_Batch"),
-          downloadButton('SDEdownload', "Download table"),
+          downloadButton('SDEdownload', "Download table",
+                         class = "btn-secondary"),
           htmlOutput("SDElegend_de_columns", container = h6)
         )
       )
@@ -522,7 +530,7 @@ ui <- fluidPage(
         actionButton(
           "HMbutton_from_list",
           "Plot heatmap from list",
-          class = "btn-primary",
+          class = "btn-info",
           icon = icon("hand-point-right")
           
           
@@ -556,8 +564,10 @@ ui <- fluidPage(
         plotOutput("heatmap", width = "100%", height = "auto", hover = "plot_hover"),
         
         hr(),
-        downloadLink("downloadheatmap", "Download plot", class = "btn btn-default"),
-        downloadLink("downloadheatmap_svg", "Download plot as SVG", class = "btn btn-default")
+        downloadButton("downloadheatmap", "Download plot",
+                     class = "btn-secondary"),
+        downloadButton("downloadheatmap_svg", "Download plot as SVG",
+                     class = "btn-secondary")
         
         
       )
