@@ -410,11 +410,6 @@ ui <- fluidPage(
               inputId = "DEtest",
               label = "Select statistical test",
               choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test")
-            ),
-            textInput(
-              inputId = "DEnb_display",
-              label = "Show top X genes",
-              value = "100"
             )
             
           )
@@ -474,11 +469,6 @@ ui <- fluidPage(
                 inputId = "SDEtest",
                 label = "Select statistical test",
                 choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test")
-              ),
-              textInput(
-                inputId = "SDEnb_display",
-                label = "Show top X genes",
-                value = "100"
               )
               
             )

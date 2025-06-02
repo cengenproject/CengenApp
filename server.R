@@ -613,8 +613,7 @@ server <- function(input, output, session) {
         output$MarkTable_Batch <- DT::renderDataTable({
           
           DT::datatable(
-            tableDEX |> head( as.numeric(input$DEnb_display) ),
-            options = list( pageLength = as.numeric(input$DEnb_display) ),
+            tableDEX,
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
@@ -766,8 +765,7 @@ server <- function(input, output, session) {
         output$SDEMarkTable_Batch <- DT::renderDataTable({
           
           DT::datatable(
-            tableDEX |> head( as.numeric(input$DEnb_display) ),
-            options = list( pageLength = as.numeric(input$DEnb_display) ),
+            tableDEX,
             style = 'jQueryUI',
             class = 'cell-border stripe',
             rownames = FALSE
