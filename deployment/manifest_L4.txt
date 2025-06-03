@@ -10,7 +10,7 @@ www/L1.png
 www/L4.png
 www/adult.png
 www/male.png
-www/Theme.min.css
+www/startbs_landing_styles.css
 data/2025-03-21_L4/all_cell_types.qs
 data/2025-03-21_L4/all_neuron_types.qs
 data/2025-03-21_L4/allCells.data.qs
