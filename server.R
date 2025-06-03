@@ -580,7 +580,7 @@ server <- function(input, output, session) {
             "Columns:",
             "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
             "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
-            "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
+            "p-val and FDR: nominal and adjusted (Benjamini-Hochberg) P-values of the test.")
           
         } else if(input$DEtest == "Pseudobulk: Wilcoxon"){
           c(
@@ -589,7 +589,7 @@ server <- function(input, output, session) {
             "Columns:",
             "mean_1 and mean_2: mean expression across samples for group 1 and 2.",
             "log2FC: change in mean expression between group 1 and 2 (log fold change).",
-            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+            "p-val and FDR: nominal and adjusted (Benjamini-Hochberg) P-values of the test."
           )
         } else if(input$DEtest == "Pseudobulk: edgeR pairwise exact test"){
           c(
@@ -599,7 +599,7 @@ server <- function(input, output, session) {
             "Columns:",
             "logFC: change in mean expression between group 1 and 2 (log fold change).",
             "logCPM: mean expression of the gene across all groups (log of Count Per Million reads)",
-            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+            "p-val and FDR: nominal and adjusted (Benjamini-Hochberg) P-values of the test."
           )
         }
       }, sep = "<br>")
@@ -726,22 +726,24 @@ server <- function(input, output, session) {
       output$SDElegend_de_columns <- renderText({
         
         if(input$SDEtest == "Wilcoxon on single cells"){
-          c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test. This test may display inflated power, as it considers each cell as an individual replicate.
+          c("Testing differential expression between all single cells in the chosen clusters, using a Wilcoxon test.",
+          "This test may display inflated power, as it considers each cell as an individual replicate.
           Before testing, the genes are filtered to only consider those displaying enough expression in one of the groups, 
           and a large enough fold change between groups.",
             "Columns:",
-            "pct.1 and pct.2: percentage of single cells where the gene is detected in the first and second group.",
-            "avg_logFC: expression change between group 1 and group 2 (as the log of the fold change of the means).",
-            "p-val and p_val_adj: nominal and adjusted (Bonferroni) P-values of the test.")
+            "pct.1: percentage of single cells where the gene is detected in the male.",
+          "pct.2: percentage of single cells where the gene is detected in the hermaphrodite",
+            "avg_logFC: expression change between male and hermaphrodite (as the log of the fold change of the means). A positive number indicates higher expression in males.",
+            "p-val and FDR: nominal and adjusted (Benjamini-Hochberg) P-values of the test.")
           
         } else if(input$SDEtest == "Pseudobulk: Wilcoxon"){
           c(
             "Testing differential expression between cell types across samples (pseudobulk), using a Wilcoxon test.
         Only genes which displayed high enough expression in enough cell types are considered.",
             "Columns:",
-            "mean_1 and mean_2: mean expression across samples for group 1 and 2.",
-            "log2FC: change in mean expression between group 1 and 2 (log fold change).",
-            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+            "mean_1 and mean_2: mean expression across samples for males and hermaphrodites.",
+            "log2FC: change in mean expression between males and hermaphrodites (log fold change). A positive number indicates higher expression in the male.",
+            "p_val and FDR: nominal and adjusted (Benjamini-Hochberg) p-values of the test."
           )
         } else if(input$SDEtest == "Pseudobulk: edgeR pairwise exact test"){
           c(
@@ -749,9 +751,9 @@ server <- function(input, output, session) {
         Only genes which displayed high enough expression in enough cell types are considered.
         Note that the exact test only allows pairwise comparisons, edgeR implements other tests (based on glm) which allow more complex comparisons but are impractical to run on a website.",
             "Columns:",
-            "logFC: change in mean expression between group 1 and 2 (log fold change).",
+            "logFC: change in mean expression between males and hermaphrodites (log fold change). A positive number indicates higher expression in males.",
             "logCPM: mean expression of the gene across all groups (log of Count Per Million reads)",
-            "p_val and p_val_adj: nominal and adjusted (Bonferroni) p-values of the test."
+            "p_val and FDR: nominal and adjusted (Benjamini-Hochberg) p-values of the test."
           )
         }
       }, sep = "<br>")

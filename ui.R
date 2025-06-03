@@ -463,14 +463,14 @@ ui <- fluidPage(
                 inputId = "SDEmale",
                 label = "Select male cells",
                 choices = male_all_cell_types,
-                selected = "AVL",
+                selected = "ADF",
                 multiple = TRUE
               ),
               selectInput(
                 inputId = "SDEherm",
                 label = "Select hermaphrodite cells",
                 choices = herm_all_cell_types,
-                selected = c("RME_DV","RME_LR"),
+                selected = c("ADF"),
                 multiple = TRUE
               ),
               actionButton("SDEbutton", "Calculate DEX", class = "btn-info")
@@ -481,7 +481,8 @@ ui <- fluidPage(
               selectInput(
                 inputId = "SDEtest",
                 label = "Select statistical test",
-                choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test")
+                choices = c("Wilcoxon on single cells", "Pseudobulk: Wilcoxon", "Pseudobulk: edgeR pairwise exact test"),
+                selected = "Pseudobulk: edgeR pairwise exact test"
               )
               
             )
