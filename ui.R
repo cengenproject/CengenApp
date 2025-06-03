@@ -94,16 +94,22 @@ ui <- fluidPage(
   
   #~ App header ----
   div(
-    tags$img(src = icon_big, style = "margin: 15px"),
+    tags$img(src = icon_big, style = "margin: 25px"),
     div(
       titlePanel(
         paste(dataset, "CeNGEN")
       ),
       p("Discovery and analysis of the C. elegans Neuronal Gene Expression Network", 
-        style = "font-size: 1.2em; color: #666; margin-top: -10px; margin-bottom: 0;"),
+        style = "font-size: 1.2em; color: #555; margin-top: -10px; margin-bottom: 0;"),
       style = "flex: 1;"
     ),
-    style = "display: flex; align-items: center;  margin-bottom: 30px; padding: 25px 0;"
+    style = paste0(
+      "display: flex; align-items: center;  margin-bottom: 30px; padding: 20px;",
+      "background: linear-gradient(to bottom, ",
+      bg_color, " 0%, ",
+      bg_color, " 40%, ",
+      "white 100%);"
+    )
   ),
   
   div(

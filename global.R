@@ -24,6 +24,7 @@ stopifnot(file.exists(file.path("www", favicon) ))
 stopifnot(file.exists(file.path("www", icon_big) ))
 stopifnot(dir.exists(data_dir))
 stopifnot( length(list.files(data_dir)) > 5 )
+stopifnot(nchar(bg_color) > 4)
 
 
 

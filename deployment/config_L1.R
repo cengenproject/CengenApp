@@ -13,3 +13,5 @@ unreliable_gene_ids <- c(
   "WBGene00006783", "WBGene00006789"
   
 )
+
+bg_color <- "#b4d0f9"
