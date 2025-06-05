@@ -2,11 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-Dataset_*
-google-analytics-script2.html
-rsconnect*
-data/
-tests/*
-Rplots.pdf
-*_data
 *.Rproj
+www/google-analytics-*.html
+rsconnect/
+data/
