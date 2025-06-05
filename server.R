@@ -190,7 +190,8 @@ server <- function(input, output, session) {
         output$text1 <-
           isolate(renderText({
             shiny::validate(need(
-              !dplyr::filter(gene_list, gene_name == var)$gene_id %in% unreliable_gene_ids,
+              is.null(unreliable_gene_names) ||
+                (!dplyr::filter(gene_list, gene_name == var)$gene_name %in% unreliable_gene_names),
               message = paste0(
                 "WARNING: ",
                 input$Tgene_name,

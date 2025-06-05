@@ -42,6 +42,15 @@ available_apps <- data.frame(
 other_apps <- available_apps[available_apps$name != dataset,]
 
 
+footer <- div(
+  h5("Citation:"),
+  paper_authors, br(),
+  em(paper_title),
+  paper_date_venue, br(),
+  paper_footnote,
+  class = "alert alert-info mt-5"
+)
+
 
 
 # global variables for all apps

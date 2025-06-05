@@ -41,16 +41,7 @@ source("Functions.R")
 
 
 
-warning_msg <- if(!all(is.na(unreliable_gene_ids))){
-  p( paste0(
-    "WARNING: Expression values for ",
-    filter(gene_list, gene_id %in% unreliable_gene_ids)$gene_name |> paste(collapse = ", "),
-    " are unreliable as they have been overexpressed to generate transgenic strains."
-  ),
-  style="color:orange")
-} else{
-  ""
-}
+
 
 
 ## UI ----
@@ -146,6 +137,7 @@ ui <- fluidPage(
           br(),
           "Choose All Cells Unfiltered to query the entire unfiltered dataset, including non-neuronal cells"
         ),
+        info_msg,
         hr(),
         fluidRow(
           column(1),
@@ -208,7 +200,6 @@ ui <- fluidPage(
           )
         ),
         br(),
-        warning_msg,
         fluidRow(
           column(1),
           column(
@@ -244,7 +235,7 @@ ui <- fluidPage(
         p(
           "Find genes expressed in one group of cell types and not in another group based on the percentages of cells expressing the gene."
         ),
-        warning_msg,
+        info_msg,
         br(),
         fluidRow(
           #column(1),
@@ -321,6 +312,7 @@ ui <- fluidPage(
           br(),
           "Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."
         ),
+        info_msg,
         textOutput("TopMarkers cell plot"),
         selectInput(
           inputId = "dataset2",
@@ -340,7 +332,7 @@ ui <- fluidPage(
             label = "Show top X genes",
             value = "100"
           ),
-          warning_msg,
+          info_msg,
           DT::dataTableOutput("MarkTable"),
           downloadButton('downloadMarkers', "Download table",
                          class = "btn-secondary"),
@@ -366,7 +358,6 @@ ui <- fluidPage(
             label = "Show top X genes",
             value = "100"
           ),
-          warning_msg,
           
           DT::dataTableOutput("MarkTable2"),
           downloadButton('downloadMarkers2', "Download table",
@@ -394,7 +385,7 @@ ui <- fluidPage(
           br(),
           "Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."
         ),
-        warning_msg,
+        info_msg,
         hr(),
         fluidRow(
           column(
@@ -454,7 +445,7 @@ ui <- fluidPage(
             br(),
             "Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."
           ),
-          warning_msg,
+          info_msg,
           hr(),
           fluidRow(
             column(
@@ -511,7 +502,7 @@ ui <- fluidPage(
         p(
           "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
         ),
-        warning_msg,
+        info_msg,
         textAreaInput(
           inputId = "HMgenelist",
           label = "Introduce a list of genes",
@@ -579,6 +570,7 @@ ui <- fluidPage(
         
       )
     )
-  )
+  ),
+  footer
 )
 
