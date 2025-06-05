@@ -1,41 +1,4 @@
 
-##### Modified Seurat functions
-##### SCeNGEA APP April 2020
-#options(repos = BiocManager::repositories())
-#options("repos")
-
-
-
-# Loading data ----
-
-# note the assignment in the global environment
-load_as_needed <- function(dataset){
-  if(!exists(dataset)){
-    assign(dataset,
-           qs::qread(file.path(data_dir, paste0(dataset, ".qs"))),
-           envir = .GlobalEnv)
-  }
-}
-
-
-
-# load global data
-load_as_needed("gene_list")
-load_as_needed("all_cell_types")
-load_as_needed("all_neuron_types")
-
-if(dataset == "male"){
-  male_all_cell_types <- qs::qread(file.path(data_dir, "all_cell_types.qs"))
-  herm_all_cell_types <- qs::qread(herm_all_cell_types_path)
-}
-
-
-
-
-
-
-# Perform DE ----
-
 
 #~ single cell Wilcoxon ----
 
@@ -246,7 +209,7 @@ perform_de_pb_edger <- function(ident.1, ident.2, subset_samples = subset_sample
     ident.1 <- paste0(ident.1, "_", str_to_sentence(subset_samples[[1]]))
     
     ident.2 <- paste0(ident.2, "_", str_to_sentence(subset_samples[[2]]))
-     
+    
   }
   
   
@@ -350,6 +313,5 @@ perform_de <- function(ident.1, ident.2, method, subset_samples = NULL){
 #           by = "gene") |>
 #   ggplot() +
 #   geom_point(aes(x = pb_edger, y = pb_wilcox))
-
 
 

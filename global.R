@@ -27,6 +27,9 @@ stopifnot( length(list.files(data_dir)) > 5 )
 stopifnot(nchar(bg_color) > 4)
 
 
+source("R/load_as_needed.R")
+source("R/perform_de.R")
+source("R/plot_heatmap.R")
 
 # variables directly defined from config file
 
@@ -53,7 +56,7 @@ footer <- div(
 
 
 
-# global variables for all apps
+# shared variables for all apps
 
 ordered_tissues <- c(
   "Neuron", "Neuronal_progenitors", "Glia", "Epidermis", "Muscle_mesoderm", "Pharynx",
@@ -74,6 +77,18 @@ male_neurons <- c("CA1-4", "CA5-6", "CA7", "CA8-9", "CEM", "CP0", "CP1-4", "CP5-
                   "PDC", "PGA", "PHD?", "PVV", "PVX", "PVY", "R1B_R4B_R7B?", "R2B?",
                   "R3B_R9B?", "R4A", "R5A", "R5B?", "R6B", "R7A", "R8A?", "R8B?",
                   "R9A", "SPD", "SPV")
+
+
+
+# load global data
+load_as_needed("gene_list")
+load_as_needed("all_cell_types")
+load_as_needed("all_neuron_types")
+
+if(dataset == "male"){
+  male_all_cell_types <- qs::qread(file.path(data_dir, "all_cell_types.qs"))
+  herm_all_cell_types <- qs::qread(herm_all_cell_types_path)
+}
 
 
 

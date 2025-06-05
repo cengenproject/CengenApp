@@ -37,7 +37,6 @@ options(digits = 2)
 cat("############ End initializations ################\n")
 
 
-source("Functions.R")
 
 
 
