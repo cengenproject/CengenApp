@@ -69,7 +69,7 @@ ui <- fluidPage(
     
   ),
   
-  theme = "startbs_landing_styles.css",
+  theme = bslib::bs_theme(bootswatch = "pulse"),
   
   add_busy_spinner(
     spin = "double-bounce",
@@ -116,6 +116,7 @@ ui <- fluidPage(
     class = "alert alert-primary"
     
   ),
+  info_msg,
   hr(),
   
   # Main panel showing plots ----
@@ -136,7 +137,6 @@ ui <- fluidPage(
           br(),
           "Choose All Cells Unfiltered to query the entire unfiltered dataset, including non-neuronal cells"
         ),
-        info_msg,
         hr(),
         fluidRow(
           column(1),
@@ -234,8 +234,7 @@ ui <- fluidPage(
         p(
           "Find genes expressed in one group of cell types and not in another group based on the percentages of cells expressing the gene."
         ),
-        info_msg,
-        br(),
+        hr(),
         fluidRow(
           #column(1),
           column(
@@ -311,7 +310,6 @@ ui <- fluidPage(
           br(),
           "Please see Gene Expression by Cell type for a comprehensive list of expression values of each gene in a given cell type."
         ),
-        info_msg,
         textOutput("TopMarkers cell plot"),
         selectInput(
           inputId = "dataset2",
@@ -331,7 +329,6 @@ ui <- fluidPage(
             label = "Show top X genes",
             value = "100"
           ),
-          info_msg,
           DT::dataTableOutput("MarkTable"),
           downloadButton('downloadMarkers', "Download table",
                          class = "btn-secondary"),
@@ -384,7 +381,6 @@ ui <- fluidPage(
           br(),
           "Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."
         ),
-        info_msg,
         hr(),
         fluidRow(
           column(
@@ -444,7 +440,6 @@ ui <- fluidPage(
             br(),
             "Note, this computation is performed on demand. Comparisons of large number of cells can take several minutes and lead to app disconnections. If this becomes a problem, consider using a Pseudobulk test or running a local version of the app."
           ),
-          info_msg,
           hr(),
           fluidRow(
             column(
@@ -501,7 +496,6 @@ ui <- fluidPage(
         p(
           "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
         ),
-        info_msg,
         fluidRow(
           
           # Left: text area and plot from list
