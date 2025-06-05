@@ -1,6 +1,5 @@
 
 plot_heatmap <- function(input_gene_list, input, output){
-  cat("--> heatmap PlotHeatmapFromList\n")
   
   
   
@@ -188,20 +187,16 @@ plot_heatmap <- function(input_gene_list, input, output){
         axis.title = element_text(size = 16, color = "black"),
         # grid
         panel.grid = element_line(linewidth = 0.2, color = "grey85")
-      )
+      ) +
+      facet_grid(~tissue, scales = "free_x", space = "free_x", switch = "x") +
+      theme(
+        strip.placement = "outside", 
+        strip.background.x = element_blank(),
+        axis.text.x.bottom = element_blank(),
+        strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12),
+        strip.clip = "off"
+      ) 
     
-    
-    if(length(ordered_ss_known) > 1){
-      g <- g +
-        facet_grid(~tissue, scales = "free_x", space = "free_x", switch = "x") +
-        theme(
-          strip.placement = "outside", 
-          strip.background.x = element_blank(),
-          axis.text.x.bottom = element_blank(),
-          strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12),
-          strip.clip = "off"
-        ) 
-    }
     
     pg <- ggplotGrob(g)
     
