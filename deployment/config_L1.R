@@ -8,8 +8,6 @@ data_dir <- "data/2025-03-17_L1"
 
 # aesthetics ----
 
-favicon <- "L1.png"
-icon_big <- "L1_big.png"
 bg_color <- "#b4d0f9"
 
 

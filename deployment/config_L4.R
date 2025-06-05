@@ -5,9 +5,6 @@ dataset <- "L4"
 data_dir <- "data/2025-03-21_L4"
 
 # aesthetics ----
-favicon <- "L4.png"
-icon_big <- "L4_big.png"
-
 bg_color <- "#bc9bac"
 
 

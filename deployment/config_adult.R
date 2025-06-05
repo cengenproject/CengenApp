@@ -7,9 +7,6 @@ data_dir <- "data/052225_herm/"
 
 
 # aesthetics ----
-
-favicon <- paste0(dataset, ".png")
-icon_big <- paste0(dataset, "_big.png")
 bg_color <-"#688970"
 
 
@@ -33,7 +30,7 @@ info_msg <- div(
 
 # paper reference ----
 
-paper_authors <- "Olson, et al."
+paper_authors <- "Claire Olson, the CeNGEN Consortium, et al."
 paper_title <- "Sex-specific gene expression for an adult nervous system,"
 paper_date_venue <- "manuscript in preparation."
 paper_footnote <- NULL
