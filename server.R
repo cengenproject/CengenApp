@@ -828,6 +828,13 @@ server <- function(input, output, session) {
   
   ### Heatmaps of gene expression Panel ----
   
+  HM_error_message <- reactiveVal("")
+  output$HM_error_msg <- renderUI({
+    if(HM_error_message() != "") {
+      div(class = "alert alert-danger", HM_error_message())
+    }
+  })
+  
   observeEvent(input$HMbutton_from_list, {
     
     cat("--> heatmap PlotHeatmapFromList\n")
@@ -840,11 +847,18 @@ server <- function(input, output, session) {
     
     cat("--> heatmap PlotHeatmapFromFile\n")
     
-    inFile <- input$HMfile_input$datapath
+    input_file <- input$HMfile_input$datapath
     
     
+    if(is.null(input_file)){
+      
+      message("No file found")
+      HM_error_message("Error: no file uploaded")
+      return()
+    }
     
-    input_genelist <- read.table(inFile, header=FALSE)$V1
+    HM_error_message("")
+    input_genelist <- read.table(input_file, header=FALSE)$V1
     
     plot_heatmap(input_genelist, input, output)
     

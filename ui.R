@@ -582,6 +582,8 @@ ui <- fluidPage(
         ),
         hr(),
         
+        uiOutput("HM_error_msg"),
+        
         p(
           "You can identify circles by clicking on them."
         ),
