@@ -33,7 +33,7 @@ info_msg <- div(
 
 # paper reference ----
 
-paper_authors <- "Claire Olson, Seth Taylor, Rebecca McWhirter, Brooks Leyhew, Chen Wang, Giulio Valperga, Isabel Courtney, Marc Hammarlund, Oliver Hobert, David M. Miller, III."
+paper_authors <- "Olson, et al."
 paper_title <- "Sex-specific gene expression for an adult nervous system,"
 paper_date_venue <- "manuscript in preparation."
 paper_footnote <- NULL
