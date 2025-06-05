@@ -1025,7 +1025,8 @@ server <- function(input, output, session) {
             strip.placement = "outside", 
             strip.background.x = element_blank(),
             axis.text.x.bottom = element_blank(),
-            strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12)
+            strip.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12),
+            strip.clip = "off"
           ) 
       }
       
