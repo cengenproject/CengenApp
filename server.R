@@ -980,12 +980,16 @@ server <- function(input, output, session) {
       filter(gene_name %in% ordered_ss_known) |>
       mutate(gene_name = factor(gene_name,
                                 levels = ordered_ss_known),
-             is_pharyngeal = cell.type %in% pharyngeal_neurons,
+             special_order = case_when(
+               cell.type %in% pharyngeal_neurons ~ 2,
+               cell.type %in% male_neurons ~ 3,
+               .default = 1
+               ),
              tissue = factor(tissue,
                              levels = ordered_tissues)) |>
-      arrange(tissue, is_pharyngeal) |>
+      arrange(tissue, special_order) |>
       mutate(cell.type = fct_inorder(cell.type)) |>
-      select(- is_pharyngeal) |>
+      select(- special_order) |>
       as.data.frame()
     
     

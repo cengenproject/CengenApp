@@ -67,5 +67,13 @@ pharyngeal_neurons <- c(
   "NSM"
 )
 
+male_neurons <- c("CA1-4", "CA5-6", "CA7", "CA8-9", "CEM", "CP0", "CP1-4", "CP5-6",
+                  "CP7-8", "CP9", "DVE_DVF", "DX", "EF", "HOA", "HOB?", "male.44A",
+                  "male.44B", "male.45", "male.46", "male.47", "male.48", "male.49",
+                  "male.53", "male.55A", "male.55B", "male.56", "MCM", "PCA?", "PCC",
+                  "PDC", "PGA", "PHD?", "PVV", "PVX", "PVY", "R1B_R4B_R7B?", "R2B?",
+                  "R3B_R9B?", "R4A", "R5A", "R5B?", "R6B", "R7A", "R8A?", "R8B?",
+                  "R9A", "SPD", "SPV")
+
 
 
