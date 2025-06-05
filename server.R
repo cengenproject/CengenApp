@@ -837,9 +837,14 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$HMbutton_from_file, {
+    
     cat("--> heatmap PlotHeatmapFromFile\n")
-    inFile <- input$HMfile_input
-    input_genelist <- read.table(inFile$datapath, header=FALSE)$V1
+    
+    inFile <- input$HMfile_input$datapath
+    
+    
+    
+    input_genelist <- read.table(inFile, header=FALSE)$V1
     
     plot_heatmap(input_genelist, input, output)
     

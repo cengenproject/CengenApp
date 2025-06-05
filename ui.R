@@ -502,58 +502,98 @@ ui <- fluidPage(
           "Display a heatmap showing relative expression and proportion of cells expressing a gene or group of genes across all neurons. This function uses data from threshold 2. Color shows relative scaled expression for each gene across neuron types, and is not comparable between genes."
         ),
         info_msg,
-        textAreaInput(
-          inputId = "HMgenelist",
-          label = "Introduce a list of genes",
-          value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
-          width = "500px",
-          height = "100px"
-        ),
         fluidRow(
-          column(width = 3,
-                 selectInput(
-                   inputId = "HMdataset",
-                   label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
-                   choices = c("Neurons only", "All cell types")
-                 )
+          
+          # Left: text area and plot from list
+          column(
+            width = 8,
+            # Text area input
+            fluidRow(
+              column(
+                width = 12,
+                textAreaInput(
+                  inputId = "HMgenelist",
+                  label = "Introduce a list of genes",
+                  value = "flp*\nWBGene00001447\nWBGene00001448,zig-4",
+                  width = "100%",
+                  height = "100px"
+                )
+              )
+            ),
+            # Controls row - dataset and checkbox
+            fluidRow(
+              column(
+                width = 6,
+                selectInput(
+                  inputId = "HMdataset",
+                  label = "Choose dataset: Neurons (threshold 2), All cells (unfiltered)",
+                  choices = c("Neurons only", "All cell types")
+                )
+              ),
+              column(
+                width = 6,
+                br(), # Add space to align with select input
+                checkboxInput(
+                  inputId = "HMreorder_rows",
+                  label = "Reorder rows",
+                  value = FALSE
+                )
+              )
+            ),
+            
+            fluidRow(
+              column(
+                width = 12,
+                actionButton(
+                  "HMbutton_from_list",
+                  "Plot heatmap from list",
+                  class = "btn-info",
+                  icon = icon("hand-point-right")
+                )
+              )
+            )
           ),
-          column(width = 1, offset = -10,
-                 checkboxInput(inputId = "HMreorder_rows",
-                               label = "Reorder rows",
-                               value = TRUE),
+          
+          # Right: upload and plot from file
+          column(
+            width = 2,
+            offset = 1,
+            class = "d-flex flex-column justify-content-end",
+            fluidRow(
+              column(
+                width = 12,
+                fileInput(
+                  "HMfile_input", 
+                  "File input",
+                  accept = c(
+                    "text/csv",
+                    "text/comma-separated-values,text/plain",
+                    "txt"
+                  )
+                )
+              )
+            ),
+            fluidRow(
+              column(
+                width = 12,
+                actionButton(
+                  "HMbutton_from_file",
+                  "Plot heatmap from file",
+                  class = "btn-secondary",
+                  icon = icon("hand-point-right")
+                )
+              )
+            )
           )
         ),
-        
-        actionButton(
-          "HMbutton_from_list",
-          "Plot heatmap from list",
-          class = "btn-info",
-          icon = icon("hand-point-right")
-          
-          
-        ),
         hr(),
-        fluidRow(
-          column(3,fileInput("HMfile_input", NULL,
-                             accept = c(
-                               "text/csv",
-                               "text/comma-separated-values,text/plain",
-                               "txt")
-          )),
-          #column(3,actionButton("resetFile", "Clear uploaded file")),
-          column(3,   actionButton(
-            "HMbutton_from_file",
-            "Plot heatmap from file",
-            class = "btn-secondary",
-            icon = icon("hand-point-right")
-          ))
-        ),
         
         p(
           "You can identify circles by clicking on them."
         ),
         
-        div(style="height:30px;width:800px;padding-left:10px;padding-right:10px;background-color:#ffffff;",fluidRow(verbatimTextOutput("vals", placeholder = TRUE))),
+        div(style="height:30px;width:800px;padding-left:10px;padding-right:10px;background-color:#ffffff;",
+            fluidRow(verbatimTextOutput("vals", placeholder = TRUE))),
         br(),
         br(),
         br(),
