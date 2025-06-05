@@ -1107,9 +1107,6 @@ server <- function(input, output, session) {
     
     output$heatmap <- renderPlot(g, height = 250 + 10*l)
     
-    output$dynamic <- renderUI({
-      verbatimTextOutput("vals", placeholder = TRUE)
-    })
     
     output$vals <- renderPrint({
       hover <- input$plot_hover
@@ -1297,9 +1294,6 @@ server <- function(input, output, session) {
     
     output$heatmap <- renderPlot(g, height = 250 + 10*l)
     
-    output$dynamic <- renderUI({
-      verbatimTextOutput("vals", placeholder = TRUE)
-    })
     
     output$vals <- renderPrint({
       hover <- input$plot_hover

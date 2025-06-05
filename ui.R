@@ -555,7 +555,6 @@ ui <- fluidPage(
         ),
         
         div(style="height:30px;width:800px;padding-left:10px;padding-right:10px;background-color:#ffffff;",fluidRow(verbatimTextOutput("vals", placeholder = TRUE))),
-        #uiOutput("dynamic"),
         br(),
         br(),
         br(),
