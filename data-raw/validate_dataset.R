@@ -2,18 +2,18 @@
 
 ## Inits ----
 
-ordered_tissues <- local({
-  xx <- parse("global.R")
-  eval(xx[sapply(xx, \(expr) expr[[2]] == "ordered_tissues")])
-  ordered_tissues
-})
+# ordered_tissues <- local({
+#   xx <- parse("global.R")
+#   eval(xx[sapply(xx, \(expr) expr[[2]] == "ordered_tissues")])
+#   ordered_tissues
+# })
+# 
+# validate_dataset("data/2025-03-21_L4/")
+# validate_dataset("data/2025-03-17_L1/")
+# validate_dataset("data/052225_herm/")
+# validate_dataset("data/052225_male/male/")
 
-validate_dataset("data/2025-03-21_L4/")
-validate_dataset("data/2025-03-17_L1/")
-validate_dataset("data/052225_herm/")
-validate_dataset("data/052225_male/male/")
 
-dir_male <- "data/052225_male/male/"
 
 
 validate_dataset <- function(data_dir){
